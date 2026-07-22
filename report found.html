@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Campus Lost & Found - Report Found Item</title>
+
+<style>
+
+:root{
+--ink:#1F2A38;
+--paper:#FAF6EE;
+--gold:#C99A2E;
+--gold-dark:#A87D1E;
+--green:#3E6B4F;
+--rust:#B23A2E;
+--board:#8C6A46;
+--board-dark:#7A5A3A;
+}
+
+*{
+box-sizing:border-box;
+}
+
+body{
+
+margin:0;
+font-family:Arial, sans-serif;
+background:
+linear-gradient(160deg,var(--board),var(--board-dark));
+
+min-height:100vh;
+
+color:var(--ink);
+
+}
+
+
+.container{
+
+width:90%;
+max-width:760px;
+
+margin:auto;
+
+padding:30px 0 70px;
+
+}
+
+
+nav{
+
+display:flex;
+
+justify-content:center;
+
+gap:10px;
+
+flex-wrap:wrap;
+
+margin-bottom:40px;
+
+}
+
+
+nav a{
+
+text-decoration:none;
+
+color:white;
+
+background:rgba(0,0,0,.3);
+
+padding:10px 15px;
+
+border-radius:20px;
+
+font-size:13px;
+
+}
+
+
+nav a.active{
+
+background:var(--gold);
+
+color:black;
+
+}
+
+
+header{
+
+text-align:center;
+
+color:white;
+
+margin-bottom:35px;
+
+}
+
+
+header h1{
+
+font-size:40px;
+
+margin-bottom:10px;
+
+}
+
+
+header p{
+
+font-size:16px;
+
+}
+
+
+.card{
+
+background:var(--paper);
+
+padding:40px;
+
+border-radius:15px;
+
+box-shadow:0 15px 35px rgba(0,0,0,.3);
+
+}
+
+
+.pin{
+
+width:22px;
+
+height:22px;
+
+background:var(--gold);
+
+border-radius:50%;
+
+margin:auto;
+
+margin-top:-55px;
+
+margin-bottom:20px;
+
+}
+
+
+.tag{
+
+display:inline-block;
+
+background:#dff0e3;
+
+color:var(--green);
+
+padding:5px 12px;
+
+border-radius:5px;
+
+font-size:12px;
+
+}
+
+
+h2{
+
+font-size:28px;
+
+}
+
+
+.subtitle{
+
+color:#555;
+
+}
+
+
+.field{
+
+margin-bottom:20px;
+
+}
+
+
+label{
+
+display:block;
+
+font-weight:bold;
+
+margin-bottom:7px;
+
+}
+
+
+.req{
+
+color:red;
+
+}
+
+
+input,
+textarea{
+
+width:100%;
+
+padding:12px;
+
+border:1px solid #c9ae79;
+
+border-radius:8px;
+
+font-size:15px;
+
+}
+
+
+textarea{
+
+height:100px;
+
+resize:vertical;
+
+}
+
+
+.row{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:15px;
+
+}
+
+
+@media(max-width:600px){
+
+.row{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+
+.error{
+
+display:none;
+
+color:red;
+
+font-size:13px;
+
+margin-top:5px;
+
+}
+
+
+.invalid .error{
+
+display:block;
+
+}
+
+
+.invalid input,
+.invalid textarea{
+
+border:2px solid red;
+
+}
+
+
+.valid input,
+.valid textarea{
+
+border:2px solid green;
+
+}
+
+
+.upload{
+
+border:2px dashed #c9ae79;
+
+padding:25px;
+
+text-align:center;
+
+cursor:pointer;
+
+border-radius:10px;
+
+}
+
+
+.upload:hover{
+
+background:#fff8e8;
+
+}
+
+
+.upload input{
+
+display:none;
+
+}
+
+
+.preview{
+
+display:none;
+
+margin-top:20px;
+
+width:180px;
+
+background:white;
+
+padding:10px;
+
+box-shadow:0 5px 15px #aaa;
+
+}
+
+
+.preview.show{
+
+display:block;
+
+}
+
+
+.preview img{
+
+width:100%;
+
+}
+
+
+button{
+
+width:100%;
+
+padding:14px;
+
+background:var(--green);
+
+color:white;
+
+border:none;
+
+border-radius:8px;
+
+font-size:16px;
+
+cursor:pointer;
+
+}
+
+
+button:hover{
+
+background:#2f553f;
+
+}
+
+
+.success{
+
+display:none;
+
+margin-top:20px;
+
+padding:15px;
+
+background:#dff0e3;
+
+color:green;
+
+border-radius:8px;
+
+}
+
+
+.success.show{
+
+display:block;
+
+}
+
+
+footer{
+
+text-align:center;
+
+color:white;
+
+margin-top:50px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<div class="container">
+
+<nav>
+
+<a href="index.html">Home</a>
+
+<a href="login.html">Sign In</a>
+
+<a href="report lost.html">Report Lost</a>
+
+<a class="active" href="report found.html">Report Found</a>
+
+<a href="items.html">Browse Items</a>
+
+<a href="admin.html">Admin</a>
+
+<a href="claim.html">Claim</a>
+
+</nav>
+
+
+<header>
+
+<h1>Report a Found Item</h1>
+
+<p>Help return the item to its real owner by providing details.</p>
+
+</header>
+
+
+<div class="card">
+
+
+<div class="pin"></div>
+
+<span class="tag">TAG · FOUND ITEM</span>
+
+
+<h2>Found Item Details</h2>
+
+<p class="subtitle">
+All fields marked * are required.
+</p>
+
+
+<form id="foundForm">
+
+
+<div class="field" id="itemField">
+
+<label>
+Item Name <span class="req">*</span>
+</label>
+
+<input id="itemName" placeholder="Example: Blue water bottle">
+
+<p class="error">
+Enter item name
+</p>
+
+</div>
+<div class="field" id="descField">
+
+<label>
+Description <span class="req">*</span>
+</label>
+
+<textarea 
+id="description"
+placeholder="Brand, colour, marks, stickers, details inside item">
+</textarea>
+
+<p class="error">
+Enter description (minimum 10 characters)
+</p>
+
+</div>
+
+
+
+<div class="row">
+
+
+<div class="field" id="dateField">
+
+<label>
+Date Found <span class="req">*</span>
+</label>
+
+<input 
+type="date"
+id="dateFound">
+
+<p class="error">
+Select a valid date
+</p>
+
+</div>
+
+
+
+<div class="field" id="locationField">
+
+<label>
+Location Found <span class="req">*</span>
+</label>
+
+<input 
+type="text"
+id="location"
+placeholder="Example: Library, Ground Floor">
+
+<p class="error">
+Enter found location
+</p>
+
+</div>
+
+
+</div>
+
+
+
+<div class="field" id="contactField">
+
+<label>
+Contact Details <span class="req">*</span>
+</label>
+
+
+<input 
+type="text"
+id="contact"
+placeholder="Phone number or college email">
+
+
+<p class="error">
+Enter valid phone number or email
+</p>
+
+
+</div>
+
+
+
+
+<div class="field" id="imageField">
+
+
+<label>
+Photo of Item <span class="req">*</span>
+</label>
+
+
+
+<div class="upload" id="uploadBox">
+
+
+<input 
+type="file"
+id="imageInput"
+accept="image/png,image/jpeg">
+
+
+<p>
+📷<br>
+<strong>Click to upload</strong>
+<br>
+or drag image here
+<br>
+JPG / PNG only (Max 5MB)
+</p>
+
+
+</div>
+
+
+
+<p class="error">
+Upload JPG or PNG image
+</p>
+
+
+
+
+<div class="preview" id="preview">
+
+
+<img id="previewImage">
+
+
+</div>
+
+
+</div>
+
+
+
+
+<button type="submit">
+Submit Found Report
+</button>
+
+
+
+<div class="success" id="success">
+
+Found item report submitted successfully.
+
+</div>
+
+
+</form>
+
+
+</div>
+
+
+
+<footer>
+
+CAMPUS LOST & FOUND · COLLEGE OFFICE
+
+</footer>
+
+
+</div>
+
+
+
+<script>
+
+
+const form=document.getElementById("foundForm");
+
+
+const item=document.getElementById("itemName");
+
+const desc=document.getElementById("description");
+
+const date=document.getElementById("dateFound");
+
+const locationInput=document.getElementById("location");
+
+const contact=document.getElementById("contact");
+
+
+const imageInput=document.getElementById("imageInput");
+
+const uploadBox=document.getElementById("uploadBox");
+
+const preview=document.getElementById("preview");
+
+const previewImage=document.getElementById("previewImage");
+
+
+let uploadedFile=null;
+
+
+
+function invalid(field){
+
+field.classList.add("invalid");
+
+field.classList.remove("valid");
+
+}
+
+
+
+function valid(field){
+
+field.classList.remove("invalid");
+
+field.classList.add("valid");
+
+}
+
+
+
+function checkItem(){
+
+
+let field=document.getElementById("itemField");
+
+
+if(item.value.trim().length>=2){
+
+valid(field);
+return true;
+
+}
+
+invalid(field);
+return false;
+
+}
+
+
+
+function checkDescription(){
+
+
+let field=document.getElementById("descField");
+
+
+if(desc.value.trim().length>=10){
+
+valid(field);
+return true;
+
+}
+
+
+invalid(field);
+return false;
+
+
+}
+
+
+
+function checkDate(){
+
+
+let field=document.getElementById("dateField");
+
+
+if(date.value){
+
+let selected=new Date(date.value);
+
+let today=new Date();
+
+
+if(selected<=today){
+
+valid(field);
+return true;
+
+}
+
+}
+
+
+invalid(field);
+
+return false;
+
+
+}
+
+
+
+function checkLocation(){
+
+
+let field=document.getElementById("locationField");
+
+
+if(locationInput.value.trim().length>=2){
+
+valid(field);
+return true;
+
+}
+
+
+invalid(field);
+
+return false;
+
+
+}
+
+
+
+
+function checkContact(){
+
+
+let field=document.getElementById("contactField");
+
+
+let value=contact.value.trim();
+
+
+let phone=/^[0-9+\-\s]{7,15}$/;
+
+let email=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+if(phone.test(value)||email.test(value)){
+
+valid(field);
+
+return true;
+
+}
+
+
+invalid(field);
+
+return false;
+
+
+}
+
+
+
+
+function checkImage(){
+
+
+let field=document.getElementById("imageField");
+
+
+if(uploadedFile){
+
+valid(field);
+
+return true;
+
+}
+
+
+invalid(field);
+
+return false;
+
+
+}
+// Image upload
+
+uploadBox.addEventListener("click",function(){
+
+imageInput.click();
+
+});
+
+
+imageInput.addEventListener("change",function(e){
+
+
+let file=e.target.files[0];
+
+
+if(!file){
+
+return;
+
+}
+
+
+
+let validTypes=[
+"image/jpeg",
+"image/png"
+];
+
+
+if(!validTypes.includes(file.type) || file.size > 5*1024*1024){
+
+
+uploadedFile=null;
+
+invalid(document.getElementById("imageField"));
+
+alert("Only JPG/PNG images under 5MB allowed");
+
+return;
+
+
+}
+
+
+
+uploadedFile=file;
+
+valid(document.getElementById("imageField"));
+
+
+
+let reader=new FileReader();
+
+
+reader.onload=function(event){
+
+previewImage.src=event.target.result;
+
+preview.classList.add("show");
+
+};
+
+
+reader.readAsDataURL(file);
+
+
+});
+
+
+
+
+// Drag and drop
+
+
+uploadBox.addEventListener("dragover",function(e){
+
+e.preventDefault();
+
+uploadBox.style.background="#fff5dc";
+
+});
+
+
+
+uploadBox.addEventListener("dragleave",function(){
+
+uploadBox.style.background="";
+
+});
+
+
+
+uploadBox.addEventListener("drop",function(e){
+
+e.preventDefault();
+
+
+let file=e.dataTransfer.files[0];
+
+
+if(file){
+
+
+imageInput.files=e.dataTransfer.files;
+
+
+imageInput.dispatchEvent(new Event("change"));
+
+
+}
+
+
+});
+
+
+
+
+
+form.addEventListener("submit",function(e){
+
+
+e.preventDefault();
+
+
+
+let result=[
+
+checkItem(),
+
+checkDescription(),
+
+checkDate(),
+
+checkLocation(),
+
+checkContact(),
+
+checkImage()
+
+];
+
+
+
+let success=document.getElementById("success");
+
+
+
+if(result.every(Boolean)){
+
+
+success.classList.add("show");
+
+
+form.reset();
+
+
+preview.classList.remove("show");
+
+
+uploadedFile=null;
+
+
+
+document.querySelectorAll(".field").forEach(function(field){
+
+field.classList.remove("valid");
+
+});
+
+
+
+}
+
+else{
+
+
+let first=document.querySelector(".invalid");
+
+
+if(first){
+
+first.scrollIntoView({
+
+behavior:"smooth",
+
+block:"center"
+
+});
+
+}
+
+
+}
+
+
+});
+
+
+
+</script>
+
+
+</body>
+
+</html>
