@@ -38,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Generate a unique filename to prevent overwrite
             $filename = uniqid('found_', true) . '.' . $file_ext;
+            $upload_path = 'uploads/' . $filename;
             $upload_dir = __DIR__ . '/uploads';
             if (!is_dir($upload_dir)) {
                 @mkdir($upload_dir, 0777, true);
