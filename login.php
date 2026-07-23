@@ -21,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Query database for user
         $stmt = $conn->prepare("SELECT username, name, password FROM users WHERE username = ?");
+        // Fetch user from database using prepared statements
+        $stmt = $conn->prepare("SELECT username, password FROM users WHERE username = ?");
         if ($stmt) {
             $stmt->bind_param("s", $username);
             $stmt->execute();
@@ -37,6 +39,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } else {
                         header("Location: index.php");
                     }
+            if ($result && $result->num_rows > 0) {
+                $user = $result->fetch_assoc();
+                
+                // Verify password (supports bcrypt hash or fallback to direct comparison if not hashed,
+                // but we hash it on registration/seeding)
+                if (password_verify($password, $user['password']) || $password === $user['password']) {
+                    // Start session
+                    $_SESSION['username'] = $user['username'];
+                    
+                    // Redirect to index.php
+                    header("Location: index.php");
                     exit();
                 } else {
                     $error_msg = "Invalid College ID or password.";
@@ -47,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         } else {
             $error_msg = "Database query error. Please try again.";
+            $error_msg = "Database error. Please try again later.";
         }
     }
 }
@@ -92,6 +106,9 @@ body {
 }
 
 /* Navigation */
+
+/* Navigation */
+
 nav {
     display:flex;
     justify-content:center;
@@ -115,6 +132,9 @@ nav a.active {
 }
 
 /* Header */
+
+/* Header */
+
 header {
     text-align:center;
     color:white;
@@ -132,6 +152,9 @@ header p {
 }
 
 /* Login Card */
+
+/* Login Card */
+
 .center {
     display:flex;
     justify-content:center;
@@ -153,6 +176,33 @@ header p {
     background:var(--gold);
     border-radius:50%;
     position:absolute;
+
+    width:100%;
+    max-width:400px;
+
+    background:var(--paper);
+    padding:35px;
+
+    border-radius:15px;
+
+    box-shadow:0 20px 40px rgba(0,0,0,.35);
+
+    position:relative;
+
+}
+
+
+.pin {
+
+    width:22px;
+    height:22px;
+
+    background:var(--gold);
+
+    border-radius:50%;
+
+    position:absolute;
+
     top:-12px;
     left:50%;
     transform:translateX(-50%);
@@ -264,6 +314,201 @@ footer {
     margin-top:50px;
     font-size:13px;
 }
+
+.badge-strip {
+
+    color:var(--gold-dark);
+
+    font-size:12px;
+
+    letter-spacing:2px;
+
+    border-bottom:2px dashed #C9AE79;
+
+    padding-bottom:12px;
+
+    margin-bottom:20px;
+
+}
+
+
+h2 {
+
+    font-family:'Fraunces',serif;
+
+    margin:0;
+
+}
+
+
+.sub {
+
+    font-size:14px;
+
+    color:#555;
+
+    margin-bottom:25px;
+
+}
+
+
+/* Form */
+
+.field {
+
+    margin-bottom:20px;
+
+}
+
+
+label {
+
+    display:block;
+
+    font-weight:600;
+
+    font-size:14px;
+
+    margin-bottom:7px;
+
+}
+
+
+.req {
+
+    color:var(--rust);
+
+}
+
+
+input {
+
+    width:100%;
+
+    padding:12px;
+
+    border-radius:8px;
+
+    border:1px solid #C9AE79;
+
+    font-size:15px;
+
+}
+
+
+input:focus {
+
+    outline:none;
+
+    border-color:var(--gold-dark);
+
+}
+
+
+.error-msg {
+
+    display:none;
+
+    color:var(--rust);
+
+    font-size:12px;
+
+}
+
+
+.invalid input {
+
+    border-color:var(--rust);
+
+}
+
+
+.invalid .error-msg {
+
+    display:block;
+
+}
+
+
+.valid input {
+
+    border-color:var(--green);
+
+}
+
+
+/* Button */
+
+button {
+
+    width:100%;
+
+    padding:13px;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:var(--ink);
+
+    color:white;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+}
+
+
+button:hover {
+
+    background:#3D4A5C;
+
+}
+
+
+.success-note {
+
+    display:none;
+
+    margin-top:15px;
+
+    padding:12px;
+
+    border-radius:8px;
+
+    background:#e5f1e8;
+
+    color:var(--green);
+
+}
+
+
+.success-note.show {
+
+    display:block;
+
+}
+
+
+/* Footer */
+
+footer {
+
+    text-align:center;
+
+    color:white;
+
+    opacity:.6;
+
+    margin-top:50px;
+
+    font-size:13px;
+
+}
+
 </style>
 
 </head>
@@ -271,6 +516,13 @@ footer {
 <body>
 
 <div class="wrap">
+
+
+<body>
+
+
+<div class="wrap">
+
 
 <nav>
     <a href="index.php">Home</a>
@@ -303,9 +555,31 @@ footer {
 
 <div class="pin"></div>
 
+
+
+<header>
+
+<h1>Sign In to Lost & Found</h1>
+
+<p>Use your College ID and password to track your lost or found reports.</p>
+
+</header>
+
+
+
+<div class="center">
+
+
+<div class="card">
+
+
+<div class="pin"></div>
+
+
 <div class="badge-strip">
 COLLEGE ID ACCESS
 </div>
+
 
 <h2>Sign In</h2>
 
@@ -315,6 +589,7 @@ Same credentials as your student/staff portal.
 
 <?php if ($error_msg): ?>
     <div style="border:1px solid var(--rust); color:var(--rust); padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px; font-weight:500;">
+    <div style="background:var(--paper); border:1px solid var(--rust); color:var(--rust); padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px; font-weight:500;">
         ⚠ <?php echo htmlspecialchars($error_msg); ?>
     </div>
 <?php endif; ?>
@@ -325,6 +600,14 @@ Same credentials as your student/staff portal.
 <label>
 College ID <span class="req">*</span>
 </label>
+
+<div class="field" id="collegeBox">
+
+<label>
+College ID <span class="req">*</span>
+</label>
+
+
 <input 
 type="text"
 id="collegeId"
@@ -341,6 +624,27 @@ Enter a valid College ID (minimum 5 letters/numbers).
 <label>
 Password <span class="req">*</span>
 </label>
+value="<?php echo htmlspecialchars($username ?? ''); ?>"
+>
+
+
+<p class="error-msg">
+Enter a valid College ID (minimum 5 letters/numbers).
+</p>
+
+</div>
+
+
+
+
+<div class="field" id="passwordBox">
+
+
+<label>
+Password <span class="req">*</span>
+</label>
+
+
 <input 
 type="password"
 id="password"
@@ -352,12 +656,30 @@ Password must contain at least 6 characters.
 </p>
 </div>
 
+
+
+<p class="error-msg">
+Password must contain at least 6 characters.
+</p>
+
+
+</div>
+
+
+
+
 <button type="submit">
 Sign In
 </button>
 
 <div class="success-note" id="success">
 Signed in successfully — redirecting...
+
+
+<div class="success-note" id="success">
+
+Signed in successfully — redirecting...
+
 </div>
 
 <p style="text-align:center; font-size:14px; margin-top:20px; color:#555;">
@@ -416,6 +738,111 @@ form.addEventListener("submit",(e)=>{
     }
 });
 </script>
+
+</body>
+</html>
+
+</div>
+
+
+</div>
+
+
+
+<footer>
+
+CAMPUS LOST & FOUND • COLLEGE OFFICE
+
+</footer>
+
+
+
+</div>
+
+
+
+<script>
+
+
+const form=document.getElementById("loginForm");
+
+const college=document.getElementById("collegeId");
+
+const password=document.getElementById("password");
+
+const collegeBox=document.getElementById("collegeBox");
+
+const passwordBox=document.getElementById("passwordBox");
+
+const success=document.getElementById("success");
+
+
+
+function validateCollege(){
+
+let ok=/^[A-Za-z0-9]{5,}$/.test(college.value.trim());
+
+
+collegeBox.classList.toggle("invalid",!ok);
+
+collegeBox.classList.toggle("valid",ok);
+
+
+return ok;
+
+}
+
+
+
+function validatePassword(){
+
+let ok=password.value.length>=6;
+
+
+passwordBox.classList.toggle("invalid",!ok);
+
+passwordBox.classList.toggle("valid",ok);
+
+
+return ok;
+
+}
+
+
+
+college.addEventListener("blur",validateCollege);
+
+password.addEventListener("blur",validatePassword);
+
+
+
+form.addEventListener("submit",(e)=>{
+
+
+e.preventDefault();
+
+
+success.classList.remove("show");
+
+
+if(validateCollege() && validatePassword()){
+
+
+success.classList.add("show");
+
+// Submit the form programmatically to let PHP handle it
+setTimeout(() => {
+    form.submit();
+}, 400);
+
+}
+
+
+});
+
+
+</script>
+
 
 </body>
 </html>
