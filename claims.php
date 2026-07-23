@@ -14,7 +14,22 @@ $error_msg = null;
 
 // Get item details
 $item_id = intval($_GET['item_id'] ?? $_POST['item_id'] ?? 0);
-$item_name = $_GET['item'] ?? 'Selected Item';
+$item_name = $_GET['item'] ?? '';
+
+// Fetch available found items for claim selection
+$found_items_list = [];
+$found_res = $conn->query("SELECT item_id, item_name, location FROM found_items WHERE status != 'Returned' ORDER BY item_id DESC");
+if ($found_res) {
+    while ($f_row = $found_res->fetch_assoc()) {
+        $found_items_list[] = $f_row;
+    }
+}
+
+// Pre-select first item if item_id not provided in URL
+if ($item_id <= 0 && !empty($found_items_list)) {
+    $item_id = intval($found_items_list[0]['item_id']);
+    $item_name = $found_items_list[0]['item_name'];
+}
 
 if ($item_id > 0) {
     $stmt = $conn->prepare("SELECT item_name FROM found_items WHERE item_id = ?");
@@ -30,12 +45,15 @@ if ($item_id > 0) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $item_id = intval($_POST['item_id'] ?? 0);
     $colour = trim($_POST['colorAnswer'] ?? '');
     $distinguishing_marks = trim($_POST['contentsAnswer'] ?? '');
     
     // Server-side validation
-    if (empty($colour) || empty($distinguishing_marks) || $item_id <= 0) {
-        $error_msg = "Please fill in all required fields and select a valid item.";
+    if ($item_id <= 0) {
+        $error_msg = "Please select a valid item to claim.";
+    } elseif (empty($colour) || empty($distinguishing_marks)) {
+        $error_msg = "Please fill in all required fields.";
     } elseif (!isset($_FILES['proof']) || $_FILES['proof']['error'] !== UPLOAD_ERR_OK) {
         $error_msg = "Please upload photo proof.";
     } else {
@@ -52,7 +70,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Generate a unique filename to prevent overwrite
             $filename = uniqid('claim_', true) . '.' . $file_ext;
-            $upload_path = 'uploads/' . $filename;
+            $upload_dir = __DIR__ . '/uploads';
+            if (!is_dir($upload_dir)) {
+                @mkdir($upload_dir, 0777, true);
+            }
+            $upload_path = $upload_dir . '/' . $filename;
             
             if (move_uploaded_file($file['tmp_name'], $upload_path)) {
                 // Save to claims table
@@ -425,8 +447,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form id="claimForm" method="POST" action="claims.php" enctype="multipart/form-data" novalidate>
-      <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item_id); ?>">
-      <input type="hidden" name="item" value="<?php echo htmlspecialchars($item_name); ?>">
+      <div class="field" id="f-item">
+        <label for="itemSelect">Select Item to Claim <span class="req">*</span></label>
+        <select id="itemSelect" name="item_id" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--tan-deep); font-size:15px; background:white; font-family:'Inter',sans-serif; color:var(--ink);" onchange="var selectedText = this.options[this.selectedIndex].text; document.getElementById('itemNameDisplay').textContent = selectedText;">
+          <?php if (empty($found_items_list)): ?>
+            <option value="0">No found items currently available</option>
+          <?php else: ?>
+            <?php foreach ($found_items_list as $fitem): ?>
+              <option value="<?php echo $fitem['item_id']; ?>" <?php echo ($item_id == $fitem['item_id']) ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($fitem['item_name'] . ' (Found at ' . $fitem['location'] . ')'); ?>
+              </option>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </select>
+        <p class="error-msg" id="err-item" role="alert">Please select an item to claim.</p>
+      </div>
 
       <div class="field" id="f-color">
         <label for="colorAnswer">What colour was it? <span class="req">*</span></label>
@@ -605,11 +640,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     clearState(fProof);
   });
 
+  function validateItem(){
+    var sel = document.getElementById('itemSelect');
+    var fItem = document.getElementById('f-item');
+    if(!sel || !fItem) return true;
+    var ok = parseInt(sel.value, 10) > 0;
+    ok ? setValid(fItem) : setInvalid(fItem, 'Please select an item to claim.');
+    return ok;
+  }
+
+  var itemSel = document.getElementById('itemSelect');
+  if(itemSel) itemSel.addEventListener('change', validateItem);
+
   claimForm.addEventListener('submit', function(e){
     e.preventDefault();
     claimSuccess.classList.remove('show');
 
-    var results = [validateColor(), validateContents(), validateProof()];
+    var results = [validateItem(), validateColor(), validateContents(), validateProof()];
     var allValid = results.every(Boolean);
 
     if(allValid){
