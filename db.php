@@ -24,6 +24,12 @@ if (!$conn->select_db("campus_lost_found")) {
     die("Database selection failed: " . $conn->error);
 }
 
+// Ensure uploads directory exists with full permissions
+$uploads_dir = __DIR__ . '/uploads';
+if (!is_dir($uploads_dir)) {
+    @mkdir($uploads_dir, 0777, true);
+}
+
 // 4. Create Tables if they do not exist
 $table_queries = [
     "users" => "CREATE TABLE IF NOT EXISTS users (
