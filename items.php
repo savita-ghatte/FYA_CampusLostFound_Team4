@@ -1,3 +1,55 @@
+<?php
+// items.php - Browse Items Board
+session_start();
+include "db.php";
+
+// Fetch all lost items
+$db_items = [];
+
+$lost_res = $conn->query("SELECT item_id, item_name, description, date_lost, location, contact, image, status FROM lost_items ORDER BY date_lost DESC");
+if ($lost_res) {
+    while ($row = $lost_res->fetch_assoc()) {
+        $days_ago = round((time() - strtotime($row['date_lost'])) / (60 * 60 * 24));
+        $days_label = ($days_ago <= 0) ? "Today" : (($days_ago == 1) ? "1 day ago" : "$days_ago days ago");
+        
+        $db_items[] = [
+            'id' => (int)$row['item_id'],
+            'name' => $row['item_name'],
+            'location' => $row['location'],
+            'type' => 'lost',
+            'status' => strtolower($row['status']),
+            'days' => $days_label,
+            'icon' => '🎒',
+            'image' => $row['image'],
+            'description' => $row['description']
+        ];
+    }
+}
+
+// Fetch all found items
+$found_res = $conn->query("SELECT item_id, item_name, description, date_found, location, contact, image, status FROM found_items ORDER BY date_found DESC");
+if ($found_res) {
+    while ($row = $found_res->fetch_assoc()) {
+        $days_ago = round((time() - strtotime($row['date_found'])) / (60 * 60 * 24));
+        $days_label = ($days_ago <= 0) ? "Today" : (($days_ago == 1) ? "1 day ago" : "$days_ago days ago");
+        
+        $db_items[] = [
+            'id' => (int)$row['item_id'],
+            'name' => $row['item_name'],
+            'location' => $row['location'],
+            'type' => 'found',
+            'status' => strtolower($row['status']),
+            'days' => $days_label,
+            'icon' => '📦',
+            'image' => $row['image'],
+            'description' => $row['description']
+        ];
+    }
+}
+
+// Format items array to JSON for client side consumption
+$json_items = json_encode($db_items);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -193,12 +245,18 @@
     box-shadow:0 22px 46px -14px rgba(31,42,56,0.45);
   }
   .item-thumb{
-    height:120px;
+    height:160px;
     display:flex;
     align-items:center;
     justify-content:center;
     font-size:34px;
     background:repeating-linear-gradient(135deg, rgba(201,154,46,0.08) 0 10px, transparent 10px 20px);
+    overflow:hidden;
+  }
+  .item-thumb img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
   }
   .item-body{ padding:16px 18px 18px; display:flex; flex-direction:column; flex:1; }
   .item-top{
@@ -225,6 +283,8 @@
     flex-shrink:0;
   }
   .badge-pending{ background:rgba(201,154,46,0.18); color:var(--gold-deep); }
+  .badge-matched{ background:rgba(62,107,79,0.18); color:var(--green-ok); }
+  .badge-claimed{ background:rgba(62,107,79,0.18); color:var(--green-ok); }
   .badge-returned{ background:rgba(62,107,79,0.18); color:var(--green-ok); }
   .badge-unclaimed{ background:rgba(178,58,46,0.15); color:var(--rust); }
 
@@ -293,13 +353,23 @@
 <div class="wrap">
 
   <nav>
-    <a href="index.html">Home</a>
-    <a href="login.html">Sign In</a>
-    <a href="report lost.html">Report Lost</a>
-    <a href="report found.html">Report Found</a>
-    <a href="items.html" class="active">Browse Items</a>
-    <a href="admin.html">Admin</a>
-     <a href="claims.html">Claim</a>
+    <a href="index.php">Home</a>
+    <?php if (isset($_SESSION['username'])): ?>
+        <a href="report_lost.php">Report Lost</a>
+        <a href="report_found.php">Report Found</a>
+    <?php endif; ?>
+    <a href="items.php" class="active">Browse Items</a>
+    <?php if (isset($_SESSION['username'])): ?>
+        <a href="claims.php">Claim</a>
+        <a href="profile.php">Edit Profile</a>
+        <?php if ($_SESSION['username'] === 'admin'): ?>
+            <a href="admin.php">Admin</a>
+        <?php endif; ?>
+        <a href="logout.php">Sign Out (<?php echo htmlspecialchars($_SESSION['username']); ?>)</a>
+    <?php else: ?>
+        <a href="login.php">Sign In</a>
+        <a href="register.php">Sign Up</a>
+    <?php endif; ?>
   </nav>
 
   <header>
@@ -322,12 +392,13 @@
     <select class="status-filter" id="statusFilter">
       <option value="all">All statuses</option>
       <option value="pending">Pending</option>
+      <option value="matched">Matched</option>
+      <option value="claimed">Claimed</option>
       <option value="returned">Returned</option>
-      <option value="unclaimed">Unclaimed</option>
     </select>
   </div>
 
-  <p class="result-count" id="resultCount">Showing 6 items</p>
+  <p class="result-count" id="resultCount">Showing 0 items</p>
 
   <div class="item-grid" id="itemGrid"></div>
   <p class="no-results" id="noResults">No items match your search. Try a different keyword or filter.</p>
@@ -337,14 +408,8 @@
 
 <script>
 (function(){
-  var items = [
-    { id:1, name:"Grey Backpack",          location:"Library",      type:"lost",  status:"pending",   days:"2 days ago", icon:"🎒" },
-    { id:2, name:"Bunch of Keys",          location:"Canteen",      type:"found", status:"returned",  days:"4 days ago", icon:"🔑" },
-    { id:3, name:"Blue Water Bottle",      location:"Sports Ground",type:"found", status:"unclaimed", days:"6 days ago", icon:"🧴" },
-    { id:4, name:"Black Umbrella",         location:"Main Gate",    type:"lost",  status:"pending",   days:"1 day ago",  icon:"☂️" },
-    { id:5, name:"Scientific Calculator",  location:"Exam Hall B",  type:"lost",  status:"returned",  days:"5 days ago", icon:"🧮" },
-    { id:6, name:"Wired Earphones",        location:"Cafeteria",    type:"found", status:"pending",   days:"3 days ago", icon:"🎧" }
-  ];
+  // Dynamic PHP variables rendered safely into JavaScript
+  var items = <?php echo $json_items; ?>;
 
   var grid = document.getElementById('itemGrid');
   var noResults = document.getElementById('noResults');
@@ -354,8 +419,20 @@
   var typeTabs = document.querySelectorAll('.filter-tab');
   var activeType = 'all';
 
-  var badgeClass = { pending:'badge-pending', returned:'badge-returned', unclaimed:'badge-unclaimed' };
-  var badgeLabel = { pending:'Pending', returned:'Returned', unclaimed:'Unclaimed' };
+  var badgeClass = { 
+    pending:'badge-pending', 
+    matched:'badge-matched', 
+    claimed:'badge-claimed', 
+    returned:'badge-returned', 
+    unclaimed:'badge-unclaimed' 
+  };
+  var badgeLabel = { 
+    pending:'Pending', 
+    matched:'Matched', 
+    claimed:'Claimed', 
+    returned:'Returned', 
+    unclaimed:'Unclaimed' 
+  };
 
   function escapeHtml(str){
     var div = document.createElement('div');
@@ -370,7 +447,8 @@
     var filtered = items.filter(function(item){
       var matchesQuery = !query ||
         item.name.toLowerCase().indexOf(query) !== -1 ||
-        item.location.toLowerCase().indexOf(query) !== -1;
+        item.location.toLowerCase().indexOf(query) !== -1 ||
+        item.description.toLowerCase().indexOf(query) !== -1;
       var matchesType = activeType === 'all' || item.type === activeType;
       var matchesStatus = status === 'all' || item.status === status;
       return matchesQuery && matchesType && matchesStatus;
@@ -385,8 +463,21 @@
       var verb = item.type === 'lost' ? 'Lost near ' : 'Found at ';
       var typeLabel = item.type === 'lost' ? 'Lost' : 'Found';
 
+      var thumbContent = item.icon;
+      if (item.image && item.image !== '') {
+        thumbContent = '<img src="uploads/' + encodeURIComponent(item.image) + '" alt="' + escapeHtml(item.name) + '">';
+      }
+
+      // Format status classes/labels safely
+      var displayStatus = item.status;
+      if (!badgeLabel[displayStatus]) {
+        // Fallback to title case
+        badgeLabel[displayStatus] = displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1);
+        badgeClass[displayStatus] = 'badge-pending';
+      }
+
       card.innerHTML =
-        '<div class="item-thumb">' + item.icon + '</div>' +
+        '<div class="item-thumb">' + thumbContent + '</div>' +
         '<div class="item-body">' +
           '<div class="item-top">' +
             '<p class="item-title">' + escapeHtml(item.name) + '</p>' +
@@ -395,7 +486,7 @@
           '<p class="item-meta">' + verb + escapeHtml(item.location) + ' · ' + item.days + '</p>' +
           '<div class="item-foot">' +
             '<span class="item-type">' + typeLabel + '</span>' +
-            '<a class="claim-link" href="claim.html?item=' + encodeURIComponent(item.name) + '">Claim →</a>' +
+            '<a class="claim-link" href="claims.php?item_id=' + item.id + '&item=' + encodeURIComponent(item.name) + '">Claim →</a>' +
           '</div>' +
         '</div>';
 

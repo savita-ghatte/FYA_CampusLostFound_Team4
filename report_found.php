@@ -1,3 +1,66 @@
+<?php
+// report_found.php - Report a Found Item
+session_start();
+include "db.php";
+
+// Redirect to login if not authenticated
+if (!isset($_SESSION['username'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$success_msg = false;
+$error_msg = null;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $item_name = trim($_POST['item_name'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+    $date_found = $_POST['date_found'] ?? '';
+    $location = trim($_POST['location'] ?? '');
+    $contact = trim($_POST['contact'] ?? '');
+    
+    // Server-side validation
+    if (empty($item_name) || empty($description) || empty($date_found) || empty($location) || empty($contact)) {
+        $error_msg = "Please fill in all required fields.";
+    } elseif (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+        $error_msg = "Please upload a photo of the item.";
+    } else {
+        $file = $_FILES['image'];
+        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
+        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowed_exts = ['jpg', 'jpeg', 'png'];
+        
+        // Validate image type and size (max 5MB)
+        if (!in_array($file['type'], $allowed_types) && !in_array($file_ext, $allowed_exts)) {
+            $error_msg = "Only JPG, JPEG, and PNG images are allowed.";
+        } elseif ($file['size'] > 5 * 1024 * 1024) {
+            $error_msg = "The image size must be under 5MB.";
+        } else {
+            // Generate a unique filename to prevent overwrite
+            $filename = uniqid('found_', true) . '.' . $file_ext;
+            $upload_path = 'uploads/' . $filename;
+            
+            if (move_uploaded_file($file['tmp_name'], $upload_path)) {
+                // Save to database using prepared statements
+                $stmt = $conn->prepare("INSERT INTO found_items (item_name, description, date_found, location, contact, image, status) VALUES (?, ?, ?, ?, ?, ?, 'Pending')");
+                if ($stmt) {
+                    $stmt->bind_param("ssssss", $item_name, $description, $date_found, $location, $contact, $filename);
+                    if ($stmt->execute()) {
+                        $success_msg = true;
+                    } else {
+                        $error_msg = "Database query failed. Please try again.";
+                    }
+                    $stmt->close();
+                } else {
+                    $error_msg = "Database statement preparation failed.";
+                }
+            } else {
+                $error_msg = "Failed to upload image. Please check directory permissions.";
+            }
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +68,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Campus Lost & Found - Report Found Item</title>
-
 
 <style>
 
@@ -421,21 +483,23 @@ margin-top:50px;
 <div class="container">
 
 <nav>
-
-<a href="index.html">Home</a>
-
-<a href="login.html">Sign In</a>
-
-<a href="report lost.html">Report Lost</a>
-
-<a class="active" href="report found.html">Report Found</a>
-
-<a href="items.html">Browse Items</a>
-
-<a href="admin.html">Admin</a>
-
- <a href="claims.html">Claim</a>
-
+    <a href="index.php">Home</a>
+    <?php if (isset($_SESSION['username'])): ?>
+        <a href="report_lost.php">Report Lost</a>
+        <a href="report_found.php" class="active">Report Found</a>
+    <?php endif; ?>
+    <a href="items.php">Browse Items</a>
+    <?php if (isset($_SESSION['username'])): ?>
+        <a href="claims.php">Claim</a>
+        <a href="profile.php">Edit Profile</a>
+        <?php if ($_SESSION['username'] === 'admin'): ?>
+            <a href="admin.php">Admin</a>
+        <?php endif; ?>
+        <a href="logout.php">Sign Out (<?php echo htmlspecialchars($_SESSION['username']); ?>)</a>
+    <?php else: ?>
+        <a href="login.php">Sign In</a>
+        <a href="register.php">Sign Up</a>
+    <?php endif; ?>
 </nav>
 
 
@@ -462,8 +526,13 @@ margin-top:50px;
 All fields marked * are required.
 </p>
 
+<?php if ($error_msg): ?>
+    <div style="border:2px solid var(--rust); color:var(--rust); padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px; font-weight:bold;">
+        ⚠ <?php echo htmlspecialchars($error_msg); ?>
+    </div>
+<?php endif; ?>
 
-<form id="foundForm">
+<form id="foundForm" method="POST" action="report_found.php" enctype="multipart/form-data">
 
 
 <div class="field" id="itemField">
@@ -472,7 +541,7 @@ All fields marked * are required.
 Item Name <span class="req">*</span>
 </label>
 
-<input id="itemName" placeholder="Example: Blue water bottle">
+<input id="itemName" name="item_name" placeholder="Example: Blue water bottle" value="<?php echo htmlspecialchars($item_name ?? ''); ?>">
 
 <p class="error">
 Enter item name
@@ -487,8 +556,8 @@ Description <span class="req">*</span>
 
 <textarea 
 id="description"
-placeholder="Brand, colour, marks, stickers, details inside item">
-</textarea>
+name="description"
+placeholder="Brand, colour, marks, stickers, details inside item"><?php echo htmlspecialchars($description ?? ''); ?></textarea>
 
 <p class="error">
 Enter description (minimum 10 characters)
@@ -509,7 +578,9 @@ Date Found <span class="req">*</span>
 
 <input 
 type="date"
-id="dateFound">
+id="dateFound"
+name="date_found"
+value="<?php echo htmlspecialchars($date_found ?? ''); ?>">
 
 <p class="error">
 Select a valid date
@@ -528,7 +599,9 @@ Location Found <span class="req">*</span>
 <input 
 type="text"
 id="location"
-placeholder="Example: Library, Ground Floor">
+name="location"
+placeholder="Example: Library, Ground Floor"
+value="<?php echo htmlspecialchars($location ?? ''); ?>">
 
 <p class="error">
 Enter found location
@@ -551,7 +624,9 @@ Contact Details <span class="req">*</span>
 <input 
 type="text"
 id="contact"
-placeholder="Phone number or college email">
+name="contact"
+placeholder="Phone number or college email"
+value="<?php echo htmlspecialchars($contact ?? ''); ?>">
 
 
 <p class="error">
@@ -579,6 +654,7 @@ Photo of Item <span class="req">*</span>
 <input 
 type="file"
 id="imageInput"
+name="image"
 accept="image/png,image/jpeg">
 
 
@@ -623,7 +699,7 @@ Submit Found Report
 
 
 
-<div class="success" id="success">
+<div class="success <?php echo $success_msg ? 'show' : ''; ?>" id="success">
 
 Found item report submitted successfully.
 
@@ -653,7 +729,6 @@ CAMPUS LOST & FOUND · COLLEGE OFFICE
 
 const form=document.getElementById("foundForm");
 
-
 const item=document.getElementById("itemName");
 
 const desc=document.getElementById("description");
@@ -663,7 +738,6 @@ const date=document.getElementById("dateFound");
 const locationInput=document.getElementById("location");
 
 const contact=document.getElementById("contact");
-
 
 const imageInput=document.getElementById("imageInput");
 
@@ -801,9 +875,7 @@ function checkContact(){
 
 let field=document.getElementById("contactField");
 
-
 let value=contact.value.trim();
-
 
 let phone=/^[0-9+\-\s]{7,15}$/;
 
@@ -835,7 +907,7 @@ function checkImage(){
 let field=document.getElementById("imageField");
 
 
-if(uploadedFile){
+if(uploadedFile || imageInput.value){
 
 valid(field);
 
@@ -850,6 +922,7 @@ return false;
 
 
 }
+
 // Image upload
 
 uploadBox.addEventListener("click",function(){
@@ -875,7 +948,8 @@ return;
 
 let validTypes=[
 "image/jpeg",
-"image/png"
+"image/png",
+"image/jpg"
 ];
 
 
@@ -946,6 +1020,8 @@ uploadBox.addEventListener("drop",function(e){
 
 e.preventDefault();
 
+uploadBox.style.background="";
+
 
 let file=e.dataTransfer.files[0];
 
@@ -966,14 +1042,9 @@ imageInput.dispatchEvent(new Event("change"));
 
 
 
-
-
 form.addEventListener("submit",function(e){
 
-
 e.preventDefault();
-
-
 
 let result=[
 
@@ -991,43 +1062,21 @@ checkImage()
 
 ];
 
-
-
-let success=document.getElementById("success");
-
-
+let successMsg=document.getElementById("success");
 
 if(result.every(Boolean)){
 
+successMsg.classList.add("show");
 
-success.classList.add("show");
-
-
-form.reset();
-
-
-preview.classList.remove("show");
-
-
-uploadedFile=null;
-
-
-
-document.querySelectorAll(".field").forEach(function(field){
-
-field.classList.remove("valid");
-
-});
-
-
+setTimeout(() => {
+    form.submit();
+}, 400);
 
 }
 
 else{
 
-
 let first=document.querySelector(".invalid");
-
 
 if(first){
 
@@ -1041,17 +1090,12 @@ block:"center"
 
 }
 
-
 }
 
-
 });
-
-
 
 </script>
 
 
 </body>
-
 </html>

@@ -1,66 +1,3 @@
-<?php
-// report_lost.php - Report a Lost Item
-session_start();
-include "db.php";
-
-// Redirect to login if not authenticated
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    exit();
-}
-
-$success_msg = false;
-$error_msg = null;
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $item_name = trim($_POST['item_name'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    $date_lost = $_POST['date'] ?? '';
-    $location = trim($_POST['location'] ?? '');
-    $contact = trim($_POST['contact'] ?? '');
-    
-    // Server-side validation
-    if (empty($item_name) || empty($description) || empty($date_lost) || empty($location) || empty($contact)) {
-        $error_msg = "Please fill in all required fields.";
-    } elseif (!isset($_FILES['photo']) || $_FILES['photo']['error'] !== UPLOAD_ERR_OK) {
-        $error_msg = "Please upload a photo of the item.";
-    } else {
-        $file = $_FILES['photo'];
-        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
-        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed_exts = ['jpg', 'jpeg', 'png'];
-        
-        // Validate image type and size (max 5MB)
-        if (!in_array($file['type'], $allowed_types) && !in_array($file_ext, $allowed_exts)) {
-            $error_msg = "Only JPG, JPEG, and PNG images are allowed.";
-        } elseif ($file['size'] > 5 * 1024 * 1024) {
-            $error_msg = "The image size must be under 5MB.";
-        } else {
-            // Generate a unique filename to prevent overwrite
-            $filename = uniqid('lost_', true) . '.' . $file_ext;
-            $upload_path = 'uploads/' . $filename;
-            
-            if (move_uploaded_file($file['tmp_name'], $upload_path)) {
-                // Save to database using prepared statements
-                $stmt = $conn->prepare("INSERT INTO lost_items (item_name, description, date_lost, location, contact, image, status) VALUES (?, ?, ?, ?, ?, ?, 'Pending')");
-                if ($stmt) {
-                    $stmt->bind_param("ssssss", $item_name, $description, $date_lost, $location, $contact, $filename);
-                    if ($stmt->execute()) {
-                        $success_msg = true;
-                    } else {
-                        $error_msg = "Database query failed. Please try again.";
-                    }
-                    $stmt->close();
-                } else {
-                    $error_msg = "Database statement preparation failed.";
-                }
-            } else {
-                $error_msg = "Failed to upload image. Please check directory permissions.";
-            }
-        }
-    }
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -478,9 +415,7 @@ text-align:center;
 
 margin-top:8px;
 
-}
-
-button{
+}button{
 
 width:100%;
 
@@ -567,24 +502,23 @@ font-size:12px;
 
 
 <nav>
-    <a href="index.php">Home</a>
-    <?php if (isset($_SESSION['username'])): ?>
-        <a href="report_lost.php" class="active">Report Lost</a>
-        <a href="report_found.php">Report Found</a>
-    <?php endif; ?>
-    <a href="items.php">Browse Items</a>
-    <?php if (isset($_SESSION['username'])): ?>
-        <a href="claims.php">Claim</a>
-        <a href="profile.php">Edit Profile</a>
-        <?php if ($_SESSION['username'] === 'admin'): ?>
-            <a href="admin.php">Admin</a>
-        <?php endif; ?>
-        <a href="logout.php">Sign Out (<?php echo htmlspecialchars($_SESSION['username']); ?>)</a>
-    <?php else: ?>
-        <a href="login.php">Sign In</a>
-        <a href="register.php">Sign Up</a>
-    <?php endif; ?>
+
+<a href="index.html">Home</a>
+
+<a href="login.html">Sign In</a>
+
+<a href="report lost.html" class="active">Report Lost</a>
+
+<a href="report found.html">Report Found</a>
+
+<a href="items.html">Browse Items</a>
+
+<a href="admin.html">Admin</a>
+
+ <a href="claims.html">Claim</a>
+
 </nav>
+
 
 
 <header>
@@ -617,16 +551,7 @@ TAG · LOST-ITEM
 <p class="sub">
 All fields marked * are required.
 </p>
-
-<?php if ($error_msg): ?>
-    <div style="border:1px solid var(--rust); color:var(--rust); padding:12px; border-radius:10px; margin-bottom:20px; font-size:14px; font-weight:500;">
-        ⚠ <?php echo htmlspecialchars($error_msg); ?>
-    </div>
-<?php endif; ?>
-
-<form action="report_lost.php" method="POST" enctype="multipart/form-data" id="lostForm">
-
-
+<form action="report_lost.php" method="POST"></form>
 <div class="field" id="f-itemName">
 
 <label>
@@ -638,15 +563,13 @@ Item Name <span class="req">*</span>
 type="text"
 id="itemName"
 name="item_name"
-placeholder="e.g. Blue water bottle"
-value="<?php echo htmlspecialchars($item_name ?? ''); ?>">
+placeholder="e.g. Blue water bottle">
 
 <p class="error-msg">
 Please enter item name.
 </p>
 
 </div>
-
 
 
 
@@ -660,14 +583,14 @@ Description <span class="req">*</span>
 <textarea
 id="description"
 name="description"
-placeholder="Brand, colour, marks, stickers, etc."><?php echo htmlspecialchars($description ?? ''); ?></textarea>
+placeholder="Brand, colour, marks, stickers, etc.">
+</textarea>
 <p class="error-msg">
 Please add a description.
 </p>
 
 
 </div>
-
 
 
 
@@ -687,8 +610,7 @@ Date Lost <span class="req">*</span>
 <input
 type="date"
 id="dateLost"
-name="date"
-value="<?php echo htmlspecialchars($date_lost ?? ''); ?>">
+name="date">
 
 <p class="error-msg">
 Enter a valid date.
@@ -700,7 +622,11 @@ Enter a valid date.
 
 
 
-<div class="field" id="f-location">
+<input
+type="text"
+id="location"
+name="location"
+placeholder="Library, Classroom">
 
 <label>
 Location Lost <span class="req">*</span>
@@ -710,9 +636,7 @@ Location Lost <span class="req">*</span>
 <input
 type="text"
 id="location"
-name="location"
-placeholder="Library, Classroom"
-value="<?php echo htmlspecialchars($location ?? ''); ?>">
+placeholder="Library, Classroom">
 
 
 <p class="error-msg">
@@ -740,9 +664,7 @@ Contact Details <span class="req">*</span>
 <input
 type="text"
 id="contact"
-name="contact"
-placeholder="Phone or email"
-value="<?php echo htmlspecialchars($contact ?? ''); ?>">
+placeholder="Phone or email">
 
 <p class="error-msg">
 Enter valid contact details.
@@ -750,7 +672,6 @@ Enter valid contact details.
 
 
 </div>
-
 
 
 
@@ -835,7 +756,7 @@ id="previewName">
 </button>
 
 <div 
-class="success-note <?php echo $success_msg ? 'show' : ''; ?>"
+class="success-note"
 id="lostSuccess">
 
 Report submitted successfully. Office will review it shortly.
@@ -870,8 +791,10 @@ const description = document.getElementById("description");
 const dateLost = document.getElementById("dateLost");
 const locationInput = document.getElementById("location");
 const contact = document.getElementById("contact");
+
 const imageInput = document.getElementById("imageInput");
 const uploadZone = document.getElementById("uploadZone");
+
 const previewBox = document.getElementById("previewBox");
 const previewImg = document.getElementById("previewImg");
 const previewName = document.getElementById("previewName");
@@ -1027,11 +950,8 @@ function checkImage(){
 
 let field=document.getElementById("f-image");
 
-// If server-side indicates success or we already have file uploaded, or we check dynamically
-// If we have a file or we are in edit and have image from PHP, otherwise invalid
-// Wait, client side validation checks if the file input is selected. If not, it fails.
-// But wait, if they submit, the file input should be filled.
-if(!uploadedFile && !imageInput.value){
+
+if(!uploadedFile){
 
 invalid(field);
 
@@ -1045,7 +965,6 @@ valid(field);
 return true;
 
 }
-
 
 
 
@@ -1083,8 +1002,7 @@ return;
 
 let allowed=[
 "image/jpeg",
-"image/png",
-"image/jpg"
+"image/png"
 ];
 
 
@@ -1177,12 +1095,61 @@ form.addEventListener("submit", function(e){
 
     if(!result.every(Boolean)){
         e.preventDefault();
-    } else {
-        // If JS validation passes, let the form submit natively to PHP
-        success.classList.add("show");
     }
 
 });
+
+success.classList.remove("show");
+
+
+
+let result=[
+
+checkItem(),
+
+checkDescription(),
+
+checkDate(),
+
+checkLocation(),
+
+checkContact(),
+
+checkImage()
+
+];
+
+
+
+if(result.every(Boolean)){
+
+
+success.classList.add("show");
+
+
+form.reset();
+
+
+previewBox.classList.remove("show");
+
+
+uploadedFile=null;
+
+
+
+document.querySelectorAll(".field").forEach((field)=>{
+
+field.classList.remove("valid");
+
+});
+
+
+}
+
+
+});
+
+
 
 </script>
 
