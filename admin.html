@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -248,4 +249,256 @@
 })();
 </script>
 </body>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Lost &amp; Found — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1F2A38; --ink-soft:#3D4A5C; --paper:#FAF6EE;
+    --tan-deep:#C9AE79; --gold:#C99A2E; --gold-deep:#A87D1E;
+    --rust:#B23A2E; --green-ok:#3E6B4F;
+    --board:#8C6A46; --board-deep:#7A5A3A;
+    --radius:14px;
+    --shadow-card: 0 18px 40px -14px rgba(31,42,56,0.35);
+    --shadow-soft: 0 6px 16px -8px rgba(31,42,56,0.25);
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; font-family:'Inter', sans-serif; color:var(--ink); min-height:100vh;
+    background:
+      radial-gradient(circle at 20% 15%, rgba(255,255,255,0.06) 0, transparent 45%),
+      radial-gradient(circle at 80% 80%, rgba(0,0,0,0.08) 0, transparent 50%),
+      repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0 2px, transparent 2px 6px),
+      linear-gradient(160deg, var(--board) 0%, var(--board-deep) 100%);
+  }
+  .wrap{ max-width:1180px; margin:0 auto; padding:32px 24px 80px; }
+
+  nav{ display:flex; justify-content:center; gap:10px; margin-bottom:44px; flex-wrap:wrap; }
+  nav a{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.08em;
+    text-transform:uppercase; color:var(--paper); text-decoration:none;
+    background:rgba(31,42,56,0.35); border:1px solid rgba(250,246,238,0.35);
+    padding:8px 16px; border-radius:999px; transition:background .15s ease;
+  }
+  nav a:hover{ background:rgba(31,42,56,0.55); }
+  nav a.active{ background:var(--gold); color:var(--ink); border-color:var(--gold); }
+
+  header{ text-align:center; margin-bottom:32px; }
+  h1{
+    font-family:'Fraunces', serif; font-weight:600; font-size:clamp(30px, 5vw, 42px);
+    line-height:1.05; color:var(--paper); margin:0 0 10px; letter-spacing:-0.01em;
+  }
+  header p{ color:rgba(250,246,238,0.82); font-size:15.5px; max-width:480px; margin:0 auto; line-height:1.55; }
+
+  .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:36px; }
+  @media (max-width:760px){ .stats{ grid-template-columns:repeat(2,1fr); } }
+  .stat-card{ background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow-card); padding:18px 16px; text-align:center; }
+  .stat-num{ font-family:'Fraunces', serif; font-size:28px; font-weight:600; }
+  .stat-label{ font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-soft); margin-top:4px; }
+
+  .panel{
+    background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow-card);
+    padding:26px 24px 30px; margin-bottom:32px;
+  }
+  .panel-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+  .panel-head h2{ font-family:'Fraunces', serif; font-size:21px; margin:0; }
+  .panel-head span{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--ink-soft); letter-spacing:0.05em; }
+
+  table{ width:100%; border-collapse:collapse; }
+  thead th{
+    text-align:left; font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--ink-soft); padding:0 10px 10px; border-bottom:2px solid var(--tan-deep);
+  }
+  tbody td{ padding:12px 10px; border-bottom:1px solid rgba(201,174,121,0.35); font-size:13.5px; vertical-align:middle; }
+  tbody tr:last-child td{ border-bottom:none; }
+
+  .type-pill{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.05em; text-transform:uppercase;
+    border-radius:999px; padding:3px 9px;
+  }
+  .type-lost{ background:rgba(201,154,46,0.15); color:var(--gold-deep); }
+  .type-found{ background:rgba(62,107,79,0.15); color:var(--green-ok); }
+
+  select.status-select{
+    font-family:'Inter', sans-serif; font-size:12.5px; color:var(--ink);
+    background:#fff; border:1.5px solid var(--tan-deep); border-radius:7px; padding:6px 8px;
+  }
+  select.status-select:focus{ outline:none; border-color:var(--gold-deep); box-shadow:0 0 0 3px rgba(201,154,46,0.18); }
+
+  /* claims panel */
+  .claim-row{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    padding:14px 4px; border-bottom:1px solid rgba(201,174,121,0.35);
+  }
+  .claim-row:last-child{ border-bottom:none; }
+  .claim-info{ flex:1; min-width:200px; }
+  .claim-info .name{ font-family:'Fraunces', serif; font-size:16px; font-weight:600; margin:0 0 3px; }
+  .claim-info .meta{ font-size:12.5px; color:var(--ink-soft); margin:0; }
+  .claim-answers{
+    font-size:12.5px; color:var(--ink-soft); margin-top:6px; background:rgba(201,154,46,0.06);
+    border-left:2px solid var(--gold); padding:6px 10px; border-radius:4px;
+  }
+  .claim-actions{ display:flex; gap:8px; }
+  .action-btn{
+    font-family:'Inter', sans-serif; font-weight:600; font-size:12.5px; border:none;
+    border-radius:8px; padding:9px 16px; cursor:pointer; transition:opacity .15s ease;
+  }
+  .action-btn:hover{ opacity:0.85; }
+  .approve-btn{ background:var(--green-ok); color:var(--paper); }
+  .reject-btn{ background:transparent; color:var(--rust); border:1.5px solid var(--rust); }
+  .claim-row.resolved{ opacity:0.55; }
+  .resolved-tag{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+  }
+
+  footer{
+    text-align:center; margin-top:56px; font-size:12.5px; color:rgba(250,246,238,0.55);
+    font-family:'JetBrains Mono', monospace; letter-spacing:0.04em;
+  }
+
+  @media (max-width:760px){
+    table thead{ display:none; }
+    table, tbody, tr, td{ display:block; width:100%; }
+    tbody tr{ margin-bottom:14px; border:1px solid var(--tan-deep); border-radius:10px; padding:8px 4px; }
+    tbody td{ display:flex; justify-content:space-between; border-bottom:none; padding:6px 10px; }
+    tbody td::before{ content:attr(data-label); font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--ink-soft); text-transform:uppercase; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+    <nav>
+ <a href="index.html">HOME</a>
+<a href="login.html">SIGN IN</a>
+<a href="report lost.html">REPORT LOST</a>
+<a href="report found.html">REPORT FOUND</a>
+<a href="items.html">BROWSE ITEM</a>
+<a href="admin.html">ADMIN</a>
+ <a href="claims.html">Claim</a>
+  </nav>
+
+  <header>
+    <h1>Admin Dashboard</h1>
+    <p>Review reports, update item status, and verify ownership claims.</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat-card"><div class="stat-num">128</div><div class="stat-label">Total Reports</div></div>
+    <div class="stat-card"><div class="stat-num">41</div><div class="stat-label">Pending</div></div>
+    <div class="stat-card"><div class="stat-num">86</div><div class="stat-label">Returned</div></div>
+    <div class="stat-card"><div class="stat-num">1</div><div class="stat-label">Claims to Verify</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Item Reports</h2>
+      <span>UPDATE STATUS DIRECTLY FROM THE TABLE</span>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Item</th><th>Type</th><th>Reported by</th><th>Location</th><th>Date</th><th>Status</th></tr>
+      </thead>
+      <tbody id="reportsBody"></tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Claims Awaiting Verification</h2>
+      <span>APPROVE ONLY IF ANSWERS &amp; PHOTO MATCH</span>
+    </div>
+    <div id="claimsList"></div>
+  </div>
+
+  <footer>CAMPUS LOST &amp; FOUND · COLLEGE OFFICE</footer>
+</div>
+
+<script>
+(function(){
+  var reports = [
+    { item:"Grey Backpack", type:"lost", by:"CS21B045", location:"Library", date:"15 Jul", status:"pending" },
+    { item:"Bunch of Keys", type:"found", by:"EC20A012", location:"Canteen", date:"13 Jul", status:"returned" },
+    { item:"Blue Water Bottle", type:"found", by:"ME22B078", location:"Sports Ground", date:"11 Jul", status:"unclaimed" },
+    { item:"Black Umbrella", type:"lost", by:"CS21B045", location:"Main Gate", date:"16 Jul", status:"pending" },
+    { item:"Scientific Calculator", type:"lost", by:"EE19B003", location:"Exam Hall B", date:"12 Jul", status:"returned" },
+    { item:"Wired Earphones", type:"found", by:"IT21A056", location:"Cafeteria", date:"14 Jul", status:"pending" }
+  ];
+
+  var reportsBody = document.getElementById('reportsBody');
+  reports.forEach(function(r){
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td data-label="Item"><strong>' + r.item + '</strong></td>' +
+      '<td data-label="Type"><span class="type-pill type-' + r.type + '">' + (r.type === 'lost' ? 'Lost' : 'Found') + '</span></td>' +
+      '<td data-label="Reported by">' + r.by + '</td>' +
+      '<td data-label="Location">' + r.location + '</td>' +
+      '<td data-label="Date">' + r.date + '</td>' +
+      '<td data-label="Status">' +
+        '<select class="status-select">' +
+          '<option value="pending"' + (r.status === 'pending' ? ' selected' : '') + '>Pending</option>' +
+          '<option value="returned"' + (r.status === 'returned' ? ' selected' : '') + '>Returned</option>' +
+          '<option value="unclaimed"' + (r.status === 'unclaimed' ? ' selected' : '') + '>Unclaimed</option>' +
+        '</select>' +
+      '</td>';
+    reportsBody.appendChild(tr);
+  });
+
+  var claims = [
+    {
+      item:"Blue Water Bottle",
+      by:"ME22B080",
+      submitted:"2 hours ago",
+      color:"Sky blue with a dented cap",
+      contents:"Has a hostel room number sticker on the base"
+    }
+  ];
+
+  var claimsList = document.getElementById('claimsList');
+
+  function renderClaims(){
+    claimsList.innerHTML = '';
+    if(claims.length === 0){
+      claimsList.innerHTML = '<p style="font-size:13.5px;color:var(--ink-soft);padding:10px 4px;">No claims waiting for review.</p>';
+      return;
+    }
+    claims.forEach(function(c, idx){
+      var row = document.createElement('div');
+      row.className = 'claim-row';
+      row.innerHTML =
+        '<div class="claim-info">' +
+          '<p class="name">' + c.item + '</p>' +
+          '<p class="meta">Claimed by ' + c.by + ' · ' + c.submitted + '</p>' +
+          '<div class="claim-answers">Colour: "' + c.color + '"<br>Details: "' + c.contents + '"</div>' +
+        '</div>' +
+        '<div class="claim-actions">' +
+          '<button class="action-btn approve-btn" data-idx="' + idx + '">Approve</button>' +
+          '<button class="action-btn reject-btn" data-idx="' + idx + '">Reject</button>' +
+        '</div>';
+      claimsList.appendChild(row);
+    });
+
+    claimsList.querySelectorAll('.action-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var row = btn.closest('.claim-row');
+        var approved = btn.classList.contains('approve-btn');
+        row.classList.add('resolved');
+        row.querySelector('.claim-actions').innerHTML =
+          '<span class="resolved-tag" style="color:' + (approved ? 'var(--green-ok)' : 'var(--rust)') + '">' +
+          (approved ? '✓ Approved' : '✕ Rejected') + '</span>';
+      });
+    });
+  }
+
+  renderClaims();
+})();
+</script>
+</body>
+
 </html>
