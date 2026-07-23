@@ -14,6 +14,7 @@ $error_msg = null;
 
 // Get item details
 $item_id = intval($_GET['item_id'] ?? $_POST['item_id'] ?? 0);
+$item_name = $_GET['item'] ?? 'Selected Item';
 $item_name = $_GET['item'] ?? '';
 
 // Fetch available found items for claim selection
@@ -50,6 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $distinguishing_marks = trim($_POST['contentsAnswer'] ?? '');
     
     // Server-side validation
+    if (empty($colour) || empty($distinguishing_marks) || $item_id <= 0) {
+        $error_msg = "Please fill in all required fields and select a valid item.";
     if ($item_id <= 0) {
         $error_msg = "Please select a valid item to claim.";
     } elseif (empty($colour) || empty($distinguishing_marks)) {
@@ -70,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Generate a unique filename to prevent overwrite
             $filename = uniqid('claim_', true) . '.' . $file_ext;
+            $upload_path = 'uploads/' . $filename;
             $upload_dir = __DIR__ . '/uploads';
             if (!is_dir($upload_dir)) {
                 @mkdir($upload_dir, 0777, true);
@@ -447,6 +451,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form id="claimForm" method="POST" action="claims.php" enctype="multipart/form-data" novalidate>
+      <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item_id); ?>">
+      <input type="hidden" name="item" value="<?php echo htmlspecialchars($item_name); ?>">
       <div class="field" id="f-item">
         <label for="itemSelect">Select Item to Claim <span class="req">*</span></label>
         <select id="itemSelect" name="item_id" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--tan-deep); font-size:15px; background:white; font-family:'Inter',sans-serif; color:var(--ink);" onchange="var selectedText = this.options[this.selectedIndex].text; document.getElementById('itemNameDisplay').textContent = selectedText;">
@@ -656,6 +662,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     e.preventDefault();
     claimSuccess.classList.remove('show');
 
+    var results = [validateColor(), validateContents(), validateProof()];
     var results = [validateItem(), validateColor(), validateContents(), validateProof()];
     var allValid = results.every(Boolean);
 
