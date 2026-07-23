@@ -39,6 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Generate a unique filename to prevent overwrite
             $filename = uniqid('found_', true) . '.' . $file_ext;
             $upload_path = 'uploads/' . $filename;
+            $upload_dir = __DIR__ . '/uploads';
+            if (!is_dir($upload_dir)) {
+                @mkdir($upload_dir, 0777, true);
+            }
+            $upload_path = $upload_dir . '/' . $filename;
             
             if (move_uploaded_file($file['tmp_name'], $upload_path)) {
                 // Save to database using prepared statements
