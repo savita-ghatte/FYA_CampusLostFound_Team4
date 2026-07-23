@@ -1,3 +1,56 @@
+<?php
+// login.php - User Sign In Page
+session_start();
+include "db.php";
+
+// Redirect if already logged in
+if (isset($_SESSION['username'])) {
+    header("Location: index.php");
+    exit();
+}
+
+$error_msg = null;
+$username = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if (empty($username) || empty($password)) {
+        $error_msg = "Please enter both College ID and password.";
+    } else {
+        // Query database for user
+        $stmt = $conn->prepare("SELECT username, name, password FROM users WHERE username = ?");
+        if ($stmt) {
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result && $row = $result->fetch_assoc()) {
+                // Verify password (hashed or plain fallback for seeded accounts)
+                if (password_verify($password, $row['password']) || $password === $row['password']) {
+                    $_SESSION['username'] = $row['username'];
+                    $_SESSION['name'] = $row['name'];
+
+                    if ($row['username'] === 'admin') {
+                        header("Location: admin.php");
+                    } else {
+                        header("Location: index.php");
+                    }
+                    exit();
+                } else {
+                    $error_msg = "Invalid College ID or password.";
+                }
+            } else {
+                $error_msg = "Invalid College ID or password.";
+            }
+            $stmt->close();
+        } else {
+            $error_msg = "Database query error. Please try again.";
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +69,7 @@
     --rust:#B23A2E;
     --green:#3E6B4F;
     --board:#8C6A46;
+    --board-dark:#7A5A3A;
 }
 
 * {
@@ -219,10 +273,23 @@ footer {
 <div class="wrap">
 
 <nav>
-<a href="index.php">Home</a>
-<a class="active" href="login.php">Sign In</a>
-<a href="items.php">Browse Items</a>
-<a href="register.php">Sign Up</a>
+    <a href="index.php">Home</a>
+    <?php if (isset($_SESSION['username'])): ?>
+        <a href="report_lost.php">Report Lost</a>
+        <a href="report_found.php">Report Found</a>
+    <?php endif; ?>
+    <a href="items.php">Browse Items</a>
+    <?php if (isset($_SESSION['username'])): ?>
+        <a href="claims.php">Claim</a>
+        <a href="profile.php">Edit Profile</a>
+        <?php if ($_SESSION['username'] === 'admin'): ?>
+            <a href="admin.php">Admin</a>
+        <?php endif; ?>
+        <a href="logout.php">Sign Out (<?php echo htmlspecialchars($_SESSION['username']); ?>)</a>
+    <?php else: ?>
+        <a class="active" href="login.php">Sign In</a>
+        <a href="register.php">Sign Up</a>
+    <?php endif; ?>
 </nav>
 
 <header>
@@ -246,6 +313,12 @@ COLLEGE ID ACCESS
 Same credentials as your student/staff portal.
 </p>
 
+<?php if ($error_msg): ?>
+    <div style="border:1px solid var(--rust); color:var(--rust); padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px; font-weight:500;">
+        ⚠ <?php echo htmlspecialchars($error_msg); ?>
+    </div>
+<?php endif; ?>
+
 <form id="loginForm" method="POST" action="login.php">
 
 <div class="field" id="collegeBox">
@@ -257,6 +330,7 @@ type="text"
 id="collegeId"
 name="username"
 placeholder="Example: CS21B045"
+value="<?php echo htmlspecialchars($username); ?>"
 >
 <p class="error-msg">
 Enter a valid College ID (minimum 5 letters/numbers).
