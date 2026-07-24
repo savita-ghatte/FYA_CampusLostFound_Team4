@@ -22,44 +22,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Server-side validation
     if (empty($item_name) || empty($description) || empty($date_lost) || empty($location) || empty($contact)) {
         $error_msg = "Please fill in all required fields.";
-    } elseif (!isset($_FILES['photo']) || $_FILES['photo']['error'] !== UPLOAD_ERR_OK) {
-        $error_msg = "Please upload a photo of the item.";
     } else {
-        $file = $_FILES['photo'];
-        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
-        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed_exts = ['jpg', 'jpeg', 'png'];
-        
-        // Validate image type and size (max 5MB)
-        if (!in_array($file['type'], $allowed_types) && !in_array($file_ext, $allowed_exts)) {
-            $error_msg = "Only JPG, JPEG, and PNG images are allowed.";
-        } elseif ($file['size'] > 5 * 1024 * 1024) {
-            $error_msg = "The image size must be under 5MB.";
-        } else {
-            // Generate a unique filename to prevent overwrite
-            $filename = uniqid('lost_', true) . '.' . $file_ext;
-            $upload_dir = __DIR__ . '/uploads';
-            if (!is_dir($upload_dir)) {
-                @mkdir($upload_dir, 0777, true);
-            }
-            $upload_path = $upload_dir . '/' . $filename;
-            
-            if (move_uploaded_file($file['tmp_name'], $upload_path)) {
-                // Save to database using prepared statements
-                $stmt = $conn->prepare("INSERT INTO lost_items (item_name, description, date_lost, location, contact, image, status) VALUES (?, ?, ?, ?, ?, ?, 'Pending')");
-                if ($stmt) {
-                    $stmt->bind_param("ssssss", $item_name, $description, $date_lost, $location, $contact, $filename);
-                    if ($stmt->execute()) {
-                        $success_msg = true;
-                    } else {
-                        $error_msg = "Database query failed. Please try again.";
-                    }
-                    $stmt->close();
-                } else {
-                    $error_msg = "Database statement preparation failed.";
-                }
+        $filename = NULL;
+        $file_valid = true;
+
+        if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['photo'];
+            $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
+            $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $allowed_exts = ['jpg', 'jpeg', 'png'];
+
+            // Validate image type and size (max 5MB)
+            if (!in_array($file['type'], $allowed_types) && !in_array($file_ext, $allowed_exts)) {
+                $error_msg = "Only JPG, JPEG, and PNG images are allowed.";
+                $file_valid = false;
+            } elseif ($file['size'] > 5 * 1024 * 1024) {
+                $error_msg = "The image size must be under 5MB.";
+                $file_valid = false;
             } else {
-                $error_msg = "Failed to upload image. Please check directory permissions.";
+                // Generate a unique filename to prevent overwrite
+                $filename = uniqid('lost_', true) . '.' . $file_ext;
+                $upload_dir = __DIR__ . '/uploads';
+                if (!is_dir($upload_dir)) {
+                    @mkdir($upload_dir, 0777, true);
+                }
+                $upload_path = $upload_dir . '/' . $filename;
+
+                if (!move_uploaded_file($file['tmp_name'], $upload_path)) {
+                    $error_msg = "Failed to upload image. Please check directory permissions.";
+                    $file_valid = false;
+                }
+            }
+        }
+
+        if ($file_valid) {
+            // Save to database using prepared statements
+            $stmt = $conn->prepare("INSERT INTO lost_items (item_name, description, date_lost, location, contact, image, status) VALUES (?, ?, ?, ?, ?, ?, 'Pending')");
+            if ($stmt) {
+                $stmt->bind_param("ssssss", $item_name, $description, $date_lost, $location, $contact, $filename);
+                if ($stmt->execute()) {
+                    $success_msg = true;
+                } else {
+                    $error_msg = "Database query failed. Please try again.";
+                }
+                $stmt->close();
+            } else {
+                $error_msg = "Database statement preparation failed.";
             }
         }
     }
@@ -764,7 +772,7 @@ Enter valid contact details.
 
 
 <label>
-Photo of Item <span class="req">*</span>
+Photo of Item <span style="font-weight:normal; font-size:12px; color:#666;">(Optional)</span>
 </label>
 
 
@@ -1028,26 +1036,10 @@ return true;
 
 
 function checkImage(){
-
 let field=document.getElementById("f-image");
-
-// If server-side indicates success or we already have file uploaded, or we check dynamically
-// If we have a file or we are in edit and have image from PHP, otherwise invalid
-// Wait, client side validation checks if the file input is selected. If not, it fails.
-// But wait, if they submit, the file input should be filled.
-if(!uploadedFile && !imageInput.value){
-
-invalid(field);
-
-return false;
-
-}
-
-
+// Image is optional in Report Lost page
 valid(field);
-
 return true;
-
 }
 
 

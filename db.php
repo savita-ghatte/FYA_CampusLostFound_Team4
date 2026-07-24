@@ -79,24 +79,31 @@ if ($check_name_col && $check_name_col->num_rows === 0) {
     $conn->query("ALTER TABLE users ADD COLUMN name VARCHAR(255) NOT NULL AFTER username");
 }
 
+// Check if users table is missing 'email' column
+$check_email_col = $conn->query("SHOW COLUMNS FROM users LIKE 'email'");
+if ($check_email_col && $check_email_col->num_rows === 0) {
+    $conn->query("ALTER TABLE users ADD COLUMN email VARCHAR(255) DEFAULT NULL AFTER name");
+}
+
 // 5. Seed default users if users table is empty
 $check_users = $conn->query("SELECT * FROM users LIMIT 1");
 if ($check_users && $check_users->num_rows === 0) {
     $seed_users = [
-        'admin' => ['System Administrator', 'admin123'],
-        'CS21B045' => ['Anushka Pardesi', 'password123'],
-        'EC20A012' => ['Harshit Borkar', 'password123'],
-        'ME22B078' => ['Savita Ghatte', 'password123'],
-        'EE19B003' => ['Rahul Sharma', 'password123'],
-        'IT21A056' => ['Priya Patel', 'password123']
+        'admin' => ['System Administrator', 'admin@college.edu', 'admin123'],
+        'CS21B045' => ['Anushka Pardesi', 'cs21b045@college.edu', 'password123'],
+        'EC20A012' => ['Harshit Borkar', 'ec20a012@college.edu', 'password123'],
+        'ME22B078' => ['Savita Ghatte', 'me22b078@college.edu', 'password123'],
+        'EE19B003' => ['Rahul Sharma', 'ee19b003@college.edu', 'password123'],
+        'IT21A056' => ['Priya Patel', 'it21a056@college.edu', 'password123']
     ];
     
-    $stmt = $conn->prepare("INSERT INTO users (username, name, password) VALUES (?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO users (username, name, email, password) VALUES (?, ?, ?, ?)");
     if ($stmt) {
         foreach ($seed_users as $uname => $data) {
             $name = $data[0];
-            $hashed = password_hash($data[1], PASSWORD_DEFAULT);
-            $stmt->bind_param("sss", $uname, $name, $hashed);
+            $email = $data[1];
+            $hashed = password_hash($data[2], PASSWORD_DEFAULT);
+            $stmt->bind_param("ssss", $uname, $name, $email, $hashed);
             $stmt->execute();
         }
         $stmt->close();

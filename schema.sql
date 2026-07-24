@@ -3,6 +3,8 @@ USE campus_lost_found;
 
 CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(100) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) DEFAULT NULL,
     password VARCHAR(255) NOT NULL
 );
 

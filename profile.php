@@ -248,12 +248,48 @@ input:focus {
     display:block;
 }
 
-.valid input {
-    border-color:var(--green);
+.password-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrap input {
+    padding-right: 42px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    transition: color 0.2s ease;
+    width: auto;
+}
+
+.toggle-password:hover {
+    color: var(--gold-dark);
+    background: none;
+}
+
+.toggle-password svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 /* Button */
-button {
+button[type="submit"] {
     width:100%;
     padding:13px;
     border:none;
@@ -265,7 +301,7 @@ button {
     cursor:pointer;
 }
 
-button:hover {
+button[type="submit"]:hover {
     background:#3D4A5C;
 }
 
@@ -365,23 +401,33 @@ value="<?php echo htmlspecialchars($name); ?>"
 
 <div class="field" id="passwordBox">
 <label>New Password (Leave blank to keep current)</label>
-<input 
-type="password"
-id="password"
-name="password"
-placeholder="Minimum 6 characters"
->
+<div class="password-wrap">
+    <input 
+    type="password"
+    id="password"
+    name="password"
+    placeholder="Minimum 6 characters"
+    >
+    <button type="button" class="toggle-password" onclick="togglePassword('password', this)" title="Show password" aria-label="Show password">
+        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    </button>
+</div>
 <p class="error-msg">Password must contain at least 6 characters.</p>
 </div>
 
 <div class="field" id="confirmBox">
 <label>Confirm New Password</label>
-<input 
-type="password"
-id="confirmPassword"
-name="confirm_password"
-placeholder="Re-enter new password"
->
+<div class="password-wrap">
+    <input 
+    type="password"
+    id="confirmPassword"
+    name="confirm_password"
+    placeholder="Re-enter new password"
+    >
+    <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword', this)" title="Show password" aria-label="Show password">
+        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    </button>
+</div>
 <p class="error-msg">Passwords do not match.</p>
 </div>
 
@@ -410,6 +456,22 @@ const confirmPassword=document.getElementById("confirmPassword");
 const nameBox=document.getElementById("nameBox");
 const passwordBox=document.getElementById("passwordBox");
 const confirmBox=document.getElementById("confirmBox");
+
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === "password") {
+        input.type = "text";
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+        btn.setAttribute("title", "Hide password");
+        btn.setAttribute("aria-label", "Hide password");
+    } else {
+        input.type = "password";
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        btn.setAttribute("title", "Show password");
+        btn.setAttribute("aria-label", "Show password");
+    }
+}
 
 function validateName(){
     let ok = studentName.value.trim().length >= 2;

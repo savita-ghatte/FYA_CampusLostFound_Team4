@@ -682,7 +682,7 @@ Enter valid contact details.
 
 
 <label>
-Photo of Item <span class="req">*</span>
+Photo of Item <span style="font-weight:normal; font-size:12px; color:#666;">(Optional)</span>
 </label>
 
 
@@ -948,23 +948,9 @@ return true;
 
 
 function checkImage(){
-
 let field=document.getElementById("f-image");
-
-
-if(!uploadedFile){
-
-invalid(field);
-
-return false;
-
-}
-
-
 valid(field);
-
 return true;
-
 }
 
 
