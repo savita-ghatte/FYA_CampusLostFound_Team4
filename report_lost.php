@@ -52,6 +52,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error_msg = "Failed to upload image. Please check directory permissions.";
                     $file_valid = false;
                 }
+        $file = $_FILES['photo'];
+        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
+        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowed_exts = ['jpg', 'jpeg', 'png'];
+        
+        // Validate image type and size (max 5MB)
+        if (!in_array($file['type'], $allowed_types) && !in_array($file_ext, $allowed_exts)) {
+            $error_msg = "Only JPG, JPEG, and PNG images are allowed.";
+        } elseif ($file['size'] > 5 * 1024 * 1024) {
+            $error_msg = "The image size must be under 5MB.";
+        } else {
+            // Generate a unique filename to prevent overwrite
+            $filename = uniqid('lost_', true) . '.' . $file_ext;
+            $upload_path = 'uploads/' . $filename;
+            $upload_dir = __DIR__ . '/uploads';
+            if (!is_dir($upload_dir)) {
+                @mkdir($upload_dir, 0777, true);
             }
         }
 
