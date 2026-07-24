@@ -15,14 +15,17 @@ $success_msg = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
 
     // Server-side validation
-    if (empty($name) || empty($username) || empty($password) || empty($confirm_password)) {
+    if (empty($name) || empty($username) || empty($email) || empty($password) || empty($confirm_password)) {
         $error_msg = "All fields are required.";
     } elseif (strlen($name) < 2) {
         $error_msg = "Name must contain at least 2 characters.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error_msg = "Please enter a valid Email ID.";
     } elseif (!preg_match('/^[A-Za-z0-9]{5,}$/', $username)) {
         $error_msg = "College ID must contain at least 5 alphanumeric characters.";
     } elseif (strlen($password) < 6) {
@@ -31,20 +34,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_msg = "Passwords do not match.";
     } else {
         // Check if username already exists
-        $stmt_check = $conn->prepare("SELECT username FROM users WHERE username = ?");
+        $stmt_check = $conn->prepare("SELECT username FROM users WHERE username = ? OR email = ?");
         if ($stmt_check) {
-            $stmt_check->bind_param("s", $username);
+            $stmt_check->bind_param("ss", $username, $email);
             $stmt_check->execute();
             $result_check = $stmt_check->get_result();
 
             if ($result_check && $result_check->num_rows > 0) {
-                $error_msg = "College ID already registered. Try signing in.";
+                $error_msg = "College ID or Email ID already registered. Try signing in.";
             } else {
                 // Insert new user
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                $stmt_insert = $conn->prepare("INSERT INTO users (username, name, password) VALUES (?, ?, ?)");
+                $stmt_insert = $conn->prepare("INSERT INTO users (username, name, email, password) VALUES (?, ?, ?, ?)");
                 if ($stmt_insert) {
-                    $stmt_insert->bind_param("sss", $username, $name, $hashed_password);
+                    $stmt_insert->bind_param("ssss", $username, $name, $email, $hashed_password);
                     if ($stmt_insert->execute()) {
                         // Registration success - auto login and redirect
                         $_SESSION['username'] = $username;
@@ -235,12 +238,48 @@ input:focus {
     display:block;
 }
 
-.valid input {
-    border-color:var(--green);
+.password-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrap input {
+    padding-right: 42px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    transition: color 0.2s ease;
+    width: auto;
+}
+
+.toggle-password:hover {
+    color: var(--gold-dark);
+    background: none;
+}
+
+.toggle-password svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 /* Button */
-button {
+button[type="submit"] {
     width:100%;
     padding:13px;
     border:none;
@@ -252,7 +291,7 @@ button {
     cursor:pointer;
 }
 
-button:hover {
+button[type="submit"]:hover {
     background:#3D4A5C;
 }
 
@@ -344,6 +383,18 @@ value="<?php echo htmlspecialchars($name ?? ''); ?>"
 <p class="error-msg">Enter your full name.</p>
 </div>
 
+<div class="field" id="emailBox">
+<label>Email ID <span class="req">*</span></label>
+<input 
+type="email"
+id="emailInput"
+name="email"
+placeholder="Example: student@college.edu"
+value="<?php echo htmlspecialchars($email ?? ''); ?>"
+>
+<p class="error-msg">Enter a valid Email ID.</p>
+</div>
+
 <div class="field" id="collegeBox">
 <label>College ID / Username <span class="req">*</span></label>
 <input 
@@ -358,23 +409,33 @@ value="<?php echo htmlspecialchars($username ?? ''); ?>"
 
 <div class="field" id="passwordBox">
 <label>Password <span class="req">*</span></label>
-<input 
-type="password"
-id="password"
-name="password"
-placeholder="Minimum 6 characters"
->
+<div class="password-wrap">
+    <input 
+    type="password"
+    id="password"
+    name="password"
+    placeholder="Minimum 6 characters"
+    >
+    <button type="button" class="toggle-password" onclick="togglePassword('password', this)" title="Show password" aria-label="Show password">
+        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    </button>
+</div>
 <p class="error-msg">Password must contain at least 6 characters.</p>
 </div>
 
 <div class="field" id="confirmBox">
 <label>Confirm Password <span class="req">*</span></label>
-<input 
-type="password"
-id="confirmPassword"
-name="confirm_password"
-placeholder="Re-enter password"
->
+<div class="password-wrap">
+    <input 
+    type="password"
+    id="confirmPassword"
+    name="confirm_password"
+    placeholder="Re-enter password"
+    >
+    <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword', this)" title="Show password" aria-label="Show password">
+        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+    </button>
+</div>
 <p class="error-msg">Passwords do not match.</p>
 </div>
 
@@ -405,15 +466,40 @@ CAMPUS LOST & FOUND • COLLEGE OFFICE
 <script>
 const form=document.getElementById("registerForm");
 const studentName=document.getElementById("studentName");
+const emailInput=document.getElementById("emailInput");
 const college=document.getElementById("collegeId");
 const password=document.getElementById("password");
 const confirmPassword=document.getElementById("confirmPassword");
 
 const nameBox=document.getElementById("nameBox");
+const emailBox=document.getElementById("emailBox");
 const collegeBox=document.getElementById("collegeBox");
 const passwordBox=document.getElementById("passwordBox");
 const confirmBox=document.getElementById("confirmBox");
 const success=document.getElementById("success");
+
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === "password") {
+        input.type = "text";
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+        btn.setAttribute("title", "Hide password");
+        btn.setAttribute("aria-label", "Hide password");
+    } else {
+        input.type = "password";
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        btn.setAttribute("title", "Show password");
+        btn.setAttribute("aria-label", "Show password");
+    }
+}
+
+function validateEmail(){
+    let ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim());
+    emailBox.classList.toggle("invalid", !ok);
+    emailBox.classList.toggle("valid", ok);
+    return ok;
+}
 
 function validateName(){
     let ok = studentName.value.trim().length >= 2;
@@ -444,6 +530,7 @@ function validateConfirm(){
 }
 
 studentName.addEventListener("blur", validateName);
+emailInput.addEventListener("blur", validateEmail);
 college.addEventListener("blur",validateCollege);
 password.addEventListener("blur",validatePassword);
 confirmPassword.addEventListener("blur", validateConfirm);
@@ -453,11 +540,12 @@ form.addEventListener("submit",(e)=>{
     success.classList.remove("show");
 
     let valName = validateName();
+    let valEmail = validateEmail();
     let valCol = validateCollege();
     let valPass = validatePassword();
     let valConf = validateConfirm();
 
-    if(valName && valCol && valPass && valConf){
+    if(valName && valEmail && valCol && valPass && valConf){
         success.classList.add("show");
         setTimeout(() => {
             form.submit();
