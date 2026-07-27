@@ -51,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($stmt_insert->execute()) {
                         // Registration success - auto login and redirect
                         $_SESSION['username'] = $username;
+                        $_SESSION['name'] = $name;
                         header("Location: index.php");
                         exit();
                     } else {
@@ -71,488 +72,85 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Campus Lost & Found — Sign Up</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
-<style>
-:root {
-    --ink:#1F2A38;
-    --paper:#FAF6EE;
-    --gold:#C99A2E;
-    --gold-dark:#A87D1E;
-    --rust:#B23A2E;
-    --green:#3E6B4F;
-    --board:#8C6A46;
-    --board-dark:#7A5A3A;
-}
-
-* {
-    box-sizing:border-box;
-}
-
-body {
-    margin:0;
-    min-height:100vh;
-    font-family:'Inter',sans-serif;
-    background:
-    linear-gradient(160deg,#8C6A46,#7A5A3A);
-    color:var(--ink);
-}
-
-.wrap {
-    max-width:1100px;
-    margin:auto;
-    padding:30px 20px;
-}
-
-/* Navigation */
-nav {
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:40px;
-}
-
-nav a {
-    text-decoration:none;
-    color:white;
-    padding:8px 16px;
-    border-radius:20px;
-    background:rgba(0,0,0,.3);
-    font-size:13px;
-}
-
-nav a.active {
-    background:var(--gold);
-    color:#222;
-}
-
-/* Header */
-header {
-    text-align:center;
-    color:white;
-    margin-bottom:40px;
-}
-
-h1 {
-    font-family:'Fraunces',serif;
-    font-size:45px;
-    margin-bottom:10px;
-}
-
-header p {
-    opacity:.85;
-}
-
-/* Register Card */
-.center {
-    display:flex;
-    justify-content:center;
-}
-
-.card {
-    width:100%;
-    max-width:440px;
-    background:var(--paper);
-    padding:35px;
-    border-radius:15px;
-    box-shadow:0 20px 40px rgba(0,0,0,.35);
-    position:relative;
-}
-
-.pin {
-    width:22px;
-    height:22px;
-    background:var(--gold);
-    border-radius:50%;
-    position:absolute;
-    top:-12px;
-    left:50%;
-    transform:translateX(-50%);
-}
-
-.badge-strip {
-    color:var(--gold-dark);
-    font-size:12px;
-    letter-spacing:2px;
-    border-bottom:2px dashed #C9AE79;
-    padding-bottom:12px;
-    margin-bottom:20px;
-}
-
-h2 {
-    font-family:'Fraunces',serif;
-    margin:0;
-}
-
-.sub {
-    font-size:14px;
-    color:#555;
-    margin-bottom:25px;
-}
-
-/* Form */
-.field {
-    margin-bottom:20px;
-}
-
-label {
-    display:block;
-    font-weight:600;
-    font-size:14px;
-    margin-bottom:7px;
-}
-
-.req {
-    color:var(--rust);
-}
-
-input {
-    width:100%;
-    padding:12px;
-    border-radius:8px;
-    border:1px solid #C9AE79;
-    font-size:15px;
-}
-
-input:focus {
-    outline:none;
-    border-color:var(--gold-dark);
-}
-
-.error-msg {
-    display:none;
-    color:var(--rust);
-    font-size:12px;
-}
-
-.invalid input {
-    border-color:var(--rust);
-}
-
-.invalid .error-msg {
-    display:block;
-}
-
-.password-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.password-wrap input {
-    padding-right: 42px;
-}
-
-.toggle-password {
-    position: absolute;
-    right: 10px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    transition: color 0.2s ease;
-    width: auto;
-}
-
-.toggle-password:hover {
-    color: var(--gold-dark);
-    background: none;
-}
-
-.toggle-password svg {
-    width: 20px;
-    height: 20px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-/* Button */
-button[type="submit"] {
-    width:100%;
-    padding:13px;
-    border:none;
-    border-radius:8px;
-    background:var(--ink);
-    color:white;
-    font-size:15px;
-    font-weight:600;
-    cursor:pointer;
-}
-
-button[type="submit"]:hover {
-    background:#3D4A5C;
-}
-
-.success-note {
-    display:none;
-    margin-top:15px;
-    padding:12px;
-    border-radius:8px;
-    background:#e5f1e8;
-    color:var(--green);
-}
-
-.success-note.show {
-    display:block;
-}
-
-/* Footer */
-footer {
-    text-align:center;
-    color:white;
-    opacity:.6;
-    margin-top:50px;
-    font-size:13px;
-}
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | CampusConnect Lost & Found - Zeal College</title>
+    
+    <!-- Font Awesome 6 Icons & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
 </head>
-
 <body>
 
-<div class="wrap">
+<div class="auth-page-wrapper">
+    <div class="glass-card" style="max-width: 500px;">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-sub">Zeal College of Engineering and Research, Narhe, Pune</p>
+        </div>
 
-<nav>
-    <a href="index.php">Home</a>
-    <?php if (isset($_SESSION['username'])): ?>
-        <a href="report_lost.php">Report Lost</a>
-        <a href="report_found.php">Report Found</a>
-    <?php endif; ?>
-    <a href="items.php">Browse Items</a>
-    <?php if (isset($_SESSION['username'])): ?>
-        <a href="claims.php">Claim</a>
-        <a href="profile.php">Edit Profile</a>
-        <?php if ($_SESSION['username'] === 'admin'): ?>
-            <a href="admin.php">Admin</a>
+        <?php if (!empty($error_msg)): ?>
+            <div class="alert alert-danger">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span><?php echo htmlspecialchars($error_msg); ?></span>
+            </div>
         <?php endif; ?>
-        <a href="logout.php">Sign Out (<?php echo htmlspecialchars($_SESSION['username']); ?>)</a>
-    <?php else: ?>
-        <a href="login.php">Sign In</a>
-        <a class="active" href="register.php">Sign Up</a>
-    <?php endif; ?>
-</nav>
 
-<header>
-<h1>Register for Lost & Found</h1>
-<p>Create an account to report items and verify ownership.</p>
-</header>
+        <form action="register.php" method="POST">
+            <div class="form-group">
+                <label for="name" class="form-label">Full Name</label>
+                <div class="input-icon-group">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Savita Ghatte" value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>" required autofocus>
+                </div>
+            </div>
 
-<div class="center">
+            <div class="form-group">
+                <label for="email" class="form-label">Email ID</label>
+                <div class="input-icon-group">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="e.g. student@zeal.edu.in" value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>" required>
+                </div>
+            </div>
 
-<div class="card">
-<div class="pin"></div>
+            <div class="form-group">
+                <label for="username" class="form-label">College Roll No. / ID</label>
+                <div class="input-icon-group">
+                    <i class="fa-solid fa-id-card"></i>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="e.g. CS21B045" value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>" required>
+                </div>
+            </div>
 
-<div class="badge-strip">
-STUDENT & STAFF PORTAL
-</div>
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-icon-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Min. 6 characters" required>
+                </div>
+            </div>
 
-<h2>Sign Up</h2>
-<p class="sub">
-All fields marked * are required.
-</p>
+            <div class="form-group">
+                <label for="confirm_password" class="form-label">Confirm Password</label>
+                <div class="input-icon-group">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Re-enter password" required>
+                </div>
+            </div>
 
-<?php if ($error_msg): ?>
-    <div style="border:1px solid var(--rust); color:var(--rust); padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px; font-weight:500;">
-        ⚠ <?php echo htmlspecialchars($error_msg); ?>
+            <button type="submit" class="btn btn-primary btn-block" style="padding:14px; margin-top: 10px;">
+                <i class="fa-solid fa-user-plus"></i> Complete Sign Up
+            </button>
+        </form>
+
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); text-align:center; font-size: 14px; color: var(--text-muted);">
+            Already have an account? <a href="login.php" style="font-weight:700;">Sign In Here</a>
+        </div>
     </div>
-<?php endif; ?>
-
-<form id="registerForm" method="POST" action="register.php">
-
-<div class="field" id="nameBox">
-<label>Full Name <span class="req">*</span></label>
-<input 
-type="text"
-id="studentName"
-name="name"
-placeholder="Example: Anushka Pardesi"
-value="<?php echo htmlspecialchars($name ?? ''); ?>"
->
-<p class="error-msg">Enter your full name.</p>
 </div>
-
-<div class="field" id="emailBox">
-<label>Email ID <span class="req">*</span></label>
-<input 
-type="email"
-id="emailInput"
-name="email"
-placeholder="Example: student@college.edu"
-value="<?php echo htmlspecialchars($email ?? ''); ?>"
->
-<p class="error-msg">Enter a valid Email ID.</p>
-</div>
-
-<div class="field" id="collegeBox">
-<label>College ID / Username <span class="req">*</span></label>
-<input 
-type="text"
-id="collegeId"
-name="username"
-placeholder="Example: CS21B045"
-value="<?php echo htmlspecialchars($username ?? ''); ?>"
->
-<p class="error-msg">Enter a valid College ID (minimum 5 letters/numbers).</p>
-</div>
-
-<div class="field" id="passwordBox">
-<label>Password <span class="req">*</span></label>
-<div class="password-wrap">
-    <input 
-    type="password"
-    id="password"
-    name="password"
-    placeholder="Minimum 6 characters"
-    >
-    <button type="button" class="toggle-password" onclick="togglePassword('password', this)" title="Show password" aria-label="Show password">
-        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    </button>
-</div>
-<p class="error-msg">Password must contain at least 6 characters.</p>
-</div>
-
-<div class="field" id="confirmBox">
-<label>Confirm Password <span class="req">*</span></label>
-<div class="password-wrap">
-    <input 
-    type="password"
-    id="confirmPassword"
-    name="confirm_password"
-    placeholder="Re-enter password"
-    >
-    <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword', this)" title="Show password" aria-label="Show password">
-        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    </button>
-</div>
-<p class="error-msg">Passwords do not match.</p>
-</div>
-
-<button type="submit">
-Sign Up
-</button>
-
-<div class="success-note" id="success">
-Account created successfully — redirecting...
-</div>
-
-<p style="text-align:center; font-size:14px; margin-top:20px; color:#555;">
-    Already have an account? <a href="login.php" style="color:var(--gold-dark); text-decoration:none; font-weight:600;">Sign In</a>
-</p>
-
-</form>
-
-</div>
-
-</div>
-
-<footer>
-CAMPUS LOST & FOUND • COLLEGE OFFICE
-</footer>
-
-</div>
-
-<script>
-const form=document.getElementById("registerForm");
-const studentName=document.getElementById("studentName");
-const emailInput=document.getElementById("emailInput");
-const college=document.getElementById("collegeId");
-const password=document.getElementById("password");
-const confirmPassword=document.getElementById("confirmPassword");
-
-const nameBox=document.getElementById("nameBox");
-const emailBox=document.getElementById("emailBox");
-const collegeBox=document.getElementById("collegeBox");
-const passwordBox=document.getElementById("passwordBox");
-const confirmBox=document.getElementById("confirmBox");
-const success=document.getElementById("success");
-
-function togglePassword(inputId, btn) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    if (input.type === "password") {
-        input.type = "text";
-        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
-        btn.setAttribute("title", "Hide password");
-        btn.setAttribute("aria-label", "Hide password");
-    } else {
-        input.type = "password";
-        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
-        btn.setAttribute("title", "Show password");
-        btn.setAttribute("aria-label", "Show password");
-    }
-}
-
-function validateEmail(){
-    let ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim());
-    emailBox.classList.toggle("invalid", !ok);
-    emailBox.classList.toggle("valid", ok);
-    return ok;
-}
-
-function validateName(){
-    let ok = studentName.value.trim().length >= 2;
-    nameBox.classList.toggle("invalid", !ok);
-    nameBox.classList.toggle("valid", ok);
-    return ok;
-}
-
-function validateCollege(){
-    let ok=/^[A-Za-z0-9]{5,}$/.test(college.value.trim());
-    collegeBox.classList.toggle("invalid",!ok);
-    collegeBox.classList.toggle("valid",ok);
-    return ok;
-}
-
-function validatePassword(){
-    let ok=password.value.length>=6;
-    passwordBox.classList.toggle("invalid",!ok);
-    passwordBox.classList.toggle("valid",ok);
-    return ok;
-}
-
-function validateConfirm(){
-    let ok = (confirmPassword.value === password.value) && confirmPassword.value.length >= 6;
-    confirmBox.classList.toggle("invalid",!ok);
-    confirmBox.classList.toggle("valid",ok);
-    return ok;
-}
-
-studentName.addEventListener("blur", validateName);
-emailInput.addEventListener("blur", validateEmail);
-college.addEventListener("blur",validateCollege);
-password.addEventListener("blur",validatePassword);
-confirmPassword.addEventListener("blur", validateConfirm);
-
-form.addEventListener("submit",(e)=>{
-    e.preventDefault();
-    success.classList.remove("show");
-
-    let valName = validateName();
-    let valEmail = validateEmail();
-    let valCol = validateCollege();
-    let valPass = validatePassword();
-    let valConf = validateConfirm();
-
-    if(valName && valEmail && valCol && valPass && valConf){
-        success.classList.add("show");
-        setTimeout(() => {
-            form.submit();
-        }, 400);
-    }
-});
-</script>
 
 </body>
 </html>

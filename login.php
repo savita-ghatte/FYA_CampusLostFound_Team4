@@ -54,450 +54,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Campus Lost & Found — Sign In</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
-<style>
-:root {
-    --ink:#1F2A38;
-    --paper:#FAF6EE;
-    --gold:#C99A2E;
-    --gold-dark:#A87D1E;
-    --rust:#B23A2E;
-    --green:#3E6B4F;
-    --board:#8C6A46;
-    --board-dark:#7A5A3A;
-}
-
-* {
-    box-sizing:border-box;
-}
-
-body {
-    margin:0;
-    min-height:100vh;
-    font-family:'Inter',sans-serif;
-    background:
-    linear-gradient(160deg,#8C6A46,#7A5A3A);
-    color:var(--ink);
-}
-
-.wrap {
-    max-width:1100px;
-    margin:auto;
-    padding:30px 20px;
-}
-
-/* Navigation */
-nav {
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:40px;
-}
-
-nav a {
-    text-decoration:none;
-    color:white;
-    padding:8px 16px;
-    border-radius:20px;
-    background:rgba(0,0,0,.3);
-    font-size:13px;
-}
-
-nav a.active {
-    background:var(--gold);
-    color:#222;
-}
-
-/* Header */
-header {
-    text-align:center;
-    color:white;
-    margin-bottom:40px;
-}
-
-h1 {
-    font-family:'Fraunces',serif;
-    font-size:45px;
-    margin-bottom:10px;
-}
-
-header p {
-    opacity:.85;
-}
-
-/* Login Card */
-.center {
-    display:flex;
-    justify-content:center;
-}
-
-.card {
-    width:100%;
-    max-width:400px;
-    background:var(--paper);
-    padding:35px;
-    border-radius:15px;
-    box-shadow:0 20px 40px rgba(0,0,0,.35);
-    position:relative;
-}
-
-.pin {
-    width:22px;
-    height:22px;
-    background:var(--gold);
-    border-radius:50%;
-    position:absolute;
-    top:-12px;
-    left:50%;
-    transform:translateX(-50%);
-}
-
-.badge-strip {
-    color:var(--gold-dark);
-    font-size:12px;
-    letter-spacing:2px;
-    border-bottom:2px dashed #C9AE79;
-    padding-bottom:12px;
-    margin-bottom:20px;
-}
-
-h2 {
-    font-family:'Fraunces',serif;
-    margin:0;
-}
-
-.sub {
-    font-size:14px;
-    color:#555;
-    margin-bottom:25px;
-}
-
-/* Form */
-.field {
-    margin-bottom:20px;
-}
-
-label {
-    display:block;
-    font-weight:600;
-    font-size:14px;
-    margin-bottom:7px;
-}
-
-.req {
-    color:var(--rust);
-}
-
-input {
-    width:100%;
-    padding:12px;
-    border-radius:8px;
-    border:1px solid #C9AE79;
-    font-size:15px;
-}
-
-input:focus {
-    outline:none;
-    border-color:var(--gold-dark);
-}
-
-.error-msg {
-    display:none;
-    color:var(--rust);
-    font-size:12px;
-    margin-top:5px;
-}
-
-.invalid input {
-    border-color:var(--rust);
-}
-
-.invalid .error-msg {
-    display:block;
-}
-
-.password-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.password-wrap input {
-    padding-right: 42px;
-}
-
-.toggle-password {
-    position: absolute;
-    right: 10px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    transition: color 0.2s ease;
-    width: auto;
-}
-
-.toggle-password:hover {
-    color: var(--gold-dark);
-    background: none;
-}
-
-.toggle-password svg {
-    width: 20px;
-    height: 20px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-.label-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 7px;
-}
-
-.label-row label {
-    margin-bottom: 0;
-}
-
-.forgot-link {
-    font-size: 13px;
-    color: var(--gold-dark);
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.forgot-link:hover {
-    text-decoration: underline;
-}
-
-/* Button */
-button[type="submit"] {
-    width:100%;
-    padding:13px;
-    border:none;
-    border-radius:8px;
-    background:var(--ink);
-    color:white;
-    font-size:15px;
-    font-weight:600;
-    cursor:pointer;
-}
-
-button[type="submit"]:hover {
-    background:#3D4A5C;
-}
-
-.success-note {
-    display:none;
-    margin-top:15px;
-    padding:12px;
-    border-radius:8px;
-    background:#e5f1e8;
-    color:var(--green);
-}
-
-.success-note.show {
-    display:block;
-}
-
-/* Footer */
-footer {
-    text-align:center;
-    color:white;
-    opacity:.6;
-    margin-top:50px;
-    font-size:13px;
-}
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | CampusConnect Lost & Found - Zeal College</title>
+    
+    <!-- Font Awesome 6 Icons & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
 </head>
-
 <body>
 
-<div class="wrap">
+<div class="auth-page-wrapper">
+    <div class="glass-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <h1 class="auth-title">CampusConnect</h1>
+            <p class="auth-sub">Zeal College of Engineering and Research, Narhe, Pune</p>
+        </div>
 
-<nav>
-    <a href="index.php">Home</a>
-    <?php if (isset($_SESSION['username'])): ?>
-        <a href="report_lost.php">Report Lost</a>
-        <a href="report_found.php">Report Found</a>
-    <?php endif; ?>
-    <a href="items.php">Browse Items</a>
-    <?php if (isset($_SESSION['username'])): ?>
-        <a href="claims.php">Claim</a>
-        <a href="profile.php">Edit Profile</a>
-        <?php if ($_SESSION['username'] === 'admin'): ?>
-            <a href="admin.php">Admin</a>
+        <?php if (!empty($error_msg)): ?>
+            <div class="alert alert-danger">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span><?php echo htmlspecialchars($error_msg); ?></span>
+            </div>
         <?php endif; ?>
-        <a href="logout.php">Sign Out (<?php echo htmlspecialchars($_SESSION['username']); ?>)</a>
-    <?php else: ?>
-        <a class="active" href="login.php">Sign In</a>
-        <a href="register.php">Sign Up</a>
-    <?php endif; ?>
-</nav>
 
-<header>
-<h1>Sign In to Lost & Found</h1>
-<p>Use your College ID and password to track your lost or found reports.</p>
-</header>
+        <form action="login.php" method="POST">
+            <div class="form-group">
+                <label for="username" class="form-label">College ID / Username</label>
+                <div class="input-icon-group">
+                    <i class="fa-solid fa-id-card"></i>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="e.g. CS21B045 or admin" value="<?php echo htmlspecialchars($username); ?>" required autofocus>
+                </div>
+            </div>
 
-<div class="center">
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-icon-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                </div>
+            </div>
 
-<div class="card">
+            <div class="form-check">
+                <label class="form-check-label">
+                    <input type="checkbox" name="remember" style="accent-color: var(--primary);"> Remember Me
+                </label>
+                <a href="forgot_password.php" style="font-size:13.5px; font-weight:600;">Forgot Password?</a>
+            </div>
 
-<div class="pin"></div>
+            <button type="submit" class="btn btn-primary btn-block" style="padding:14px;">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In to Portal
+            </button>
+        </form>
 
-<div class="badge-strip">
-COLLEGE ID ACCESS
-</div>
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); text-align:center; font-size: 14px; color: var(--text-muted);">
+            Don't have an account? <a href="register.php" style="font-weight:700;">Sign Up Here</a>
+        </div>
 
-<h2>Sign In</h2>
-
-<p class="sub">
-Same credentials as your student/staff portal.
-</p>
-
-<?php if ($error_msg): ?>
-    <div style="border:1px solid var(--rust); color:var(--rust); padding:12px; border-radius:8px; margin-bottom:20px; font-size:14px; font-weight:500;">
-        ⚠ <?php echo htmlspecialchars($error_msg); ?>
+        <div style="margin-top: 20px; background: rgba(37,99,235,0.06); padding: 12px; border-radius: var(--radius-sm); font-size: 12.5px; color: var(--text-muted); text-align: center;">
+            <i class="fa-solid fa-lightbulb" style="color:var(--primary);"></i> Demo Login: <strong>CS21B045</strong> &bull; Password: <strong>password123</strong>
+        </div>
     </div>
-<?php endif; ?>
-
-<form id="loginForm" method="POST" action="login.php">
-
-<div class="field" id="collegeBox">
-<label>
-College ID <span class="req">*</span>
-</label>
-<input 
-type="text"
-id="collegeId"
-name="username"
-placeholder="Example: CS21B045"
-value="<?php echo htmlspecialchars($username); ?>"
->
-<p class="error-msg">
-Enter a valid College ID (minimum 5 letters/numbers).
-</p>
 </div>
-
-<div class="field" id="passwordBox">
-<div class="label-row">
-    <label>
-        Password <span class="req">*</span>
-    </label>
-    <a href="forgot_password.php" class="forgot-link">Forgot Password?</a>
-</div>
-<div class="password-wrap">
-    <input 
-    type="password"
-    id="password"
-    name="password"
-    placeholder="Enter password"
-    >
-    <button type="button" class="toggle-password" onclick="togglePassword('password', this)" title="Show password" aria-label="Show password">
-        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    </button>
-</div>
-<p class="error-msg">
-Password must contain at least 6 characters.
-</p>
-</div>
-
-<button type="submit">
-Sign In
-</button>
-
-<div class="success-note" id="success">
-Signed in successfully — redirecting...
-</div>
-
-<p style="text-align:center; font-size:14px; margin-top:20px; color:#555;">
-    Don't have an account? <a href="register.php" style="color:var(--gold-dark); text-decoration:none; font-weight:600;">Sign Up</a>
-</p>
-
-</form>
-
-</div>
-
-</div>
-
-<footer>
-CAMPUS LOST & FOUND • COLLEGE OFFICE
-</footer>
-
-</div>
-
-<script>
-const form=document.getElementById("loginForm");
-const college=document.getElementById("collegeId");
-const password=document.getElementById("password");
-const collegeBox=document.getElementById("collegeBox");
-const passwordBox=document.getElementById("passwordBox");
-const success=document.getElementById("success");
-
-function togglePassword(inputId, btn) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    if (input.type === "password") {
-        input.type = "text";
-        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
-        btn.setAttribute("title", "Hide password");
-        btn.setAttribute("aria-label", "Hide password");
-    } else {
-        input.type = "password";
-        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
-        btn.setAttribute("title", "Show password");
-        btn.setAttribute("aria-label", "Show password");
-    }
-}
-
-function validateCollege(){
-    let ok=/^[A-Za-z0-9]{5,}$/.test(college.value.trim());
-    collegeBox.classList.toggle("invalid",!ok);
-    collegeBox.classList.toggle("valid",ok);
-    return ok;
-}
-
-function validatePassword(){
-    let ok=password.value.length>=6;
-    passwordBox.classList.toggle("invalid",!ok);
-    passwordBox.classList.toggle("valid",ok);
-    return ok;
-}
-
-college.addEventListener("blur",validateCollege);
-password.addEventListener("blur",validatePassword);
-
-form.addEventListener("submit",(e)=>{
-    e.preventDefault();
-    success.classList.remove("show");
-
-    let valCol = validateCollege();
-    let valPass = validatePassword();
-
-    if(valCol && valPass){
-        success.classList.add("show");
-        setTimeout(() => {
-            form.submit();
-        }, 300);
-    }
-});
-</script>
 
 </body>
 </html>
