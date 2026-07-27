@@ -322,7 +322,7 @@ if ($claims_query) {
                 <h3 class="card-title"><i class="fa-solid fa-list-check"></i> Manage Item Statuses</h3>
                 <p class="card-subtitle">Review lost & found item reports and update their status.</p>
 
-                <div style="overflow-x:auto;">
+                <div class="table-responsive" style="overflow-x:auto;">
                     <table class="admin-table">
                         <thead>
                             <tr>
@@ -364,7 +364,7 @@ if ($claims_query) {
                 <h3 class="card-title"><i class="fa-solid fa-file-signature"></i> Student Ownership Claims</h3>
                 <p class="card-subtitle">Approve or reject verification claims submitted by students.</p>
 
-                <div style="overflow-x:auto;">
+                <div class="table-responsive" style="overflow-x:auto;">
                     <table class="admin-table">
                         <thead>
                             <tr>
@@ -449,7 +449,21 @@ function resolveClaim(claim_id, status) {
 }
 
 function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    let overlay = document.querySelector('.sidebar-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', toggleSidebar);
+    }
+    const isOpen = sidebar.classList.toggle('open');
+    if (isOpen) {
+        overlay.classList.add('active');
+    } else {
+        overlay.classList.remove('active');
+    }
 }
 </script>
 </body>
