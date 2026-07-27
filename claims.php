@@ -57,8 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $distinguishing_marks = trim($_POST['contentsAnswer'] ?? '');
     
     // Server-side validation
-    if (empty($colour) || empty($distinguishing_marks) || $item_id <= 0) {
-        $error_msg = "Please fill in all required fields and select a valid item.";
     if ($item_id <= 0) {
         $error_msg = "Please select a valid item to claim.";
     } elseif (empty($colour) || empty($distinguishing_marks)) {
@@ -132,29 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="sidebar-brand-name">CampusConnect</div>
                 <div class="sidebar-brand-sub">Zeal College, Pune</div>
             </div>
-        </div>
-    <?php endif; ?>
 
-    <form id="claimForm" method="POST" action="claims.php" enctype="multipart/form-data" novalidate>
-      <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item_id); ?>">
-      <input type="hidden" name="item" value="<?php echo htmlspecialchars($item_name); ?>">
-      <div class="field" id="f-item">
-        <label for="itemSelect">Select Item to Claim <span class="req">*</span></label>
-        <select id="itemSelect" name="item_id" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--tan-deep); font-size:15px; background:white; font-family:'Inter',sans-serif; color:var(--ink);" onchange="var selectedText = this.options[this.selectedIndex].text; document.getElementById('itemNameDisplay').textContent = selectedText;">
-          <?php if (empty($found_items_list)): ?>
-            <option value="0">No found items currently available</option>
-          <?php else: ?>
-            <?php foreach ($found_items_list as $fitem): ?>
-              <option value="<?php echo $fitem['item_id']; ?>" <?php echo ($item_id == $fitem['item_id']) ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($fitem['item_name'] . ' (Found at ' . $fitem['location'] . ')'); ?>
-              </option>
-            <?php endforeach; ?>
-          <?php endif; ?>
-        </select>
-        <p class="error-msg" id="err-item" role="alert">Please select an item to claim.</p>
-      </div>
-
-        <nav class="sidebar-menu">
             <div class="sidebar-section-label">Main Menu</div>
             <a href="index.php" class="nav-link">
                 <i class="fa-solid fa-chart-pie"></i> Dashboard

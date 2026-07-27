@@ -21,37 +21,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Query database for user
         $stmt = $conn->prepare("SELECT username, name, password FROM users WHERE username = ?");
-        // Fetch user from database using prepared statements
-        $stmt = $conn->prepare("SELECT username, password FROM users WHERE username = ?");
-        // Query database for user
-        $stmt = $conn->prepare("SELECT username, name, password FROM users WHERE username = ?");
         if ($stmt) {
             $stmt->bind_param("s", $username);
             $stmt->execute();
             $result = $stmt->get_result();
 
-            if ($result && $row = $result->fetch_assoc()) {
-                // Verify password (hashed or plain fallback for seeded accounts)
-                if (password_verify($password, $row['password']) || $password === $row['password']) {
-                    $_SESSION['username'] = $row['username'];
-                    $_SESSION['name'] = $row['name'];
-
-                    if ($row['username'] === 'admin') {
-                        header("Location: admin.php");
-                    } else {
-                        header("Location: index.php");
-                    }
-            if ($result && $result->num_rows > 0) {
-                $user = $result->fetch_assoc();
-                
-                // Verify password (supports bcrypt hash or fallback to direct comparison if not hashed,
-                // but we hash it on registration/seeding)
-                if (password_verify($password, $user['password']) || $password === $user['password']) {
-                    // Start session
-                    $_SESSION['username'] = $user['username'];
-                    
-                    // Redirect to index.php
-                    header("Location: index.php");
             if ($result && $row = $result->fetch_assoc()) {
                 // Verify password (hashed or plain fallback for seeded accounts)
                 if (password_verify($password, $row['password']) || $password === $row['password']) {
@@ -72,8 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $stmt->close();
         } else {
-            $error_msg = "Database query error. Please try again.";
-            $error_msg = "Database error. Please try again later.";
             $error_msg = "Database query error. Please try again.";
         }
     }
