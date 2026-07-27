@@ -1,3 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Items | CampusConnect - Zeal College</title>
+    
+    <!-- Font Awesome 6 Icons & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
 
 <!DOCTYPE html>
 <html lang="en">
@@ -1140,135 +1151,119 @@
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="login.html">Sign In</a>
-    <a href="report lost.html">Report Lost</a>
-    <a href="report found.html">Report Found</a>
-    <a href="items.html" class="active">Browse Items</a>
-    <a href="admin.html">Admin</a>
-     <a href="claims.html">Claim</a>
-  </nav>
+<div class="app-container">
+    <!-- Fixed Left Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo-icon">
+                <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <div>
+                <div class="sidebar-brand-name">CampusConnect</div>
+                <div class="sidebar-brand-sub">Zeal College, Pune</div>
+            </div>
+        </div>
 
-  <header>
-    <h1>Browse the Board</h1>
-    <p>Search reported items or filter by type and status.</p>
-  </header>
+        <nav class="sidebar-menu">
+            <div class="sidebar-section-label">Main Menu</div>
+            <a href="index.html" class="nav-link">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="report lost.html" class="nav-link">
+                <i class="fa-solid fa-circle-plus"></i> Report Lost
+            </a>
+            <a href="report found.html" class="nav-link">
+                <i class="fa-solid fa-hand-holding-hand"></i> Report Found
+            </a>
+            <a href="items.html" class="nav-link active">
+                <i class="fa-solid fa-boxes-stacked"></i> Browse Items
+            </a>
+            <a href="claims.html" class="nav-link">
+                <i class="fa-solid fa-clipboard-check"></i> Claims
+            </a>
+        </nav>
 
-  <div class="controls">
-    <div class="search-box">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <input type="text" id="searchInput" placeholder="Search by item name or location…">
+        <div class="sidebar-footer">
+            <a href="login.html" class="sidebar-btn sidebar-btn-primary">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <header class="top-bar">
+            <div>
+                <button class="mobile-toggle" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <span class="top-bar-title">Browse Campus Items</span>
+            </div>
+            <div class="top-bar-subtitle">
+                <i class="fa-solid fa-location-dot"></i> Zeal College of Engineering and Research, Narhe, Pune
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="card" style="margin-bottom: 32px; padding: 24px;">
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                    <div class="input-icon-group" style="flex: 1; min-width: 260px;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search by item name, description, or campus location...">
+                    </div>
+
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-primary">All Items</button>
+                        <button class="btn btn-outline">Lost Items</button>
+                        <button class="btn btn-outline">Found Items</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="items-grid">
+                <div class="item-card">
+                    <div class="item-img-wrap">
+                        <div style="height:100%; display:flex; align-items:center; justify-content:center; background:#e2e8f0; color:#64748b; font-size:48px;">
+                            <i class="fa-solid fa-box"></i>
+                        </div>
+                        <span class="badge badge-found">FOUND</span>
+                    </div>
+                    <div class="item-body">
+                        <h3 class="item-title">Blue Water Bottle</h3>
+                        <p class="item-desc">Metallic sky-blue bottle with minor dent near cap.</p>
+                        <div class="item-meta">
+                            <div class="item-meta-row">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <span>Sports Ground</span>
+                            </div>
+                            <div class="item-meta-row">
+                                <i class="fa-solid fa-calendar-day"></i>
+                                <span>Recent</span>
+                            </div>
+                        </div>
+                        <a href="claims.html" class="btn btn-success btn-block">
+                            <i class="fa-solid fa-handshake"></i> Claim Ownership
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer-campus">
+            <div class="footer-brand">CampusConnect Lost & Found</div>
+            <div class="footer-college">Zeal College of Engineering and Research, Narhe, Pune</div>
+            <div class="footer-credits">
+                Developed by FYA Team 4 &bull; &copy; 2026 All Rights Reserved
+            </div>
+        </footer>
     </div>
-
-    <div class="filter-tabs" id="typeTabs">
-      <button class="filter-tab active" data-type="all">All</button>
-      <button class="filter-tab" data-type="lost">Lost</button>
-      <button class="filter-tab" data-type="found">Found</button>
-    </div>
-
-    <select class="status-filter" id="statusFilter">
-      <option value="all">All statuses</option>
-      <option value="pending">Pending</option>
-      <option value="returned">Returned</option>
-      <option value="unclaimed">Unclaimed</option>
-    </select>
-  </div>
-
-  <p class="result-count" id="resultCount">Showing 6 items</p>
-
-  <div class="item-grid" id="itemGrid"></div>
-  <p class="no-results" id="noResults">No items match your search. Try a different keyword or filter.</p>
-
-  <footer>CAMPUS LOST&amp;FOUND · COLLEGE OFFICE</footer>
 </div>
 
 <script>
-(function(){
-  var items = [
-    { id:1, name:"Grey Backpack",          location:"Library",      type:"lost",  status:"pending",   days:"2 days ago", icon:"🎒" },
-    { id:2, name:"Bunch of Keys",          location:"Canteen",      type:"found", status:"returned",  days:"4 days ago", icon:"🔑" },
-    { id:3, name:"Blue Water Bottle",      location:"Sports Ground",type:"found", status:"unclaimed", days:"6 days ago", icon:"🧴" },
-    { id:4, name:"Black Umbrella",         location:"Main Gate",    type:"lost",  status:"pending",   days:"1 day ago",  icon:"☂️" },
-    { id:5, name:"Scientific Calculator",  location:"Exam Hall B",  type:"lost",  status:"returned",  days:"5 days ago", icon:"🧮" },
-    { id:6, name:"Wired Earphones",        location:"Cafeteria",    type:"found", status:"pending",   days:"3 days ago", icon:"🎧" }
-  ];
-
-  var grid = document.getElementById('itemGrid');
-  var noResults = document.getElementById('noResults');
-  var resultCount = document.getElementById('resultCount');
-  var searchInput = document.getElementById('searchInput');
-  var statusFilter = document.getElementById('statusFilter');
-  var typeTabs = document.querySelectorAll('.filter-tab');
-  var activeType = 'all';
-
-  var badgeClass = { pending:'badge-pending', returned:'badge-returned', unclaimed:'badge-unclaimed' };
-  var badgeLabel = { pending:'Pending', returned:'Returned', unclaimed:'Unclaimed' };
-
-  function escapeHtml(str){
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  function render(){
-    var query = searchInput.value.trim().toLowerCase();
-    var status = statusFilter.value;
-
-    var filtered = items.filter(function(item){
-      var matchesQuery = !query ||
-        item.name.toLowerCase().indexOf(query) !== -1 ||
-        item.location.toLowerCase().indexOf(query) !== -1;
-      var matchesType = activeType === 'all' || item.type === activeType;
-      var matchesStatus = status === 'all' || item.status === status;
-      return matchesQuery && matchesType && matchesStatus;
-    });
-
-    grid.innerHTML = '';
-
-    filtered.forEach(function(item){
-      var card = document.createElement('div');
-      card.className = 'item-card';
-
-      var verb = item.type === 'lost' ? 'Lost near ' : 'Found at ';
-      var typeLabel = item.type === 'lost' ? 'Lost' : 'Found';
-
-      card.innerHTML =
-        '<div class="item-thumb">' + item.icon + '</div>' +
-        '<div class="item-body">' +
-          '<div class="item-top">' +
-            '<p class="item-title">' + escapeHtml(item.name) + '</p>' +
-            '<span class="badge ' + badgeClass[item.status] + '">' + badgeLabel[item.status] + '</span>' +
-          '</div>' +
-          '<p class="item-meta">' + verb + escapeHtml(item.location) + ' · ' + item.days + '</p>' +
-          '<div class="item-foot">' +
-            '<span class="item-type">' + typeLabel + '</span>' +
-            '<a class="claim-link" href="claim.html?item=' + encodeURIComponent(item.name) + '">Claim →</a>' +
-          '</div>' +
-        '</div>';
-
-      grid.appendChild(card);
-    });
-
-    resultCount.textContent = 'Showing ' + filtered.length + ' item' + (filtered.length === 1 ? '' : 's');
-    noResults.classList.toggle('show', filtered.length === 0);
-  }
-
-  searchInput.addEventListener('input', render);
-  statusFilter.addEventListener('change', render);
-  typeTabs.forEach(function(tab){
-    tab.addEventListener('click', function(){
-      typeTabs.forEach(function(t){ t.classList.remove('active'); });
-      tab.classList.add('active');
-      activeType = tab.getAttribute('data-type');
-      render();
-    });
-  });
-
-  render();
-})();
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+}
 </script>
 </body>
 

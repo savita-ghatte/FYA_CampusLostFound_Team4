@@ -9,6 +9,12 @@ if (!isset($_SESSION['username']) || $_SESSION['username'] !== 'admin') {
     exit();
 }
 
+// Prevent browser caching for security after logout
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+
 // 2. Handle AJAX Actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
@@ -175,336 +181,276 @@ if ($claims_query) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Campus Lost &amp; Found — Admin</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:#1F2A38; --ink-soft:#3D4A5C; --paper:#FAF6EE;
-    --tan-deep:#C9AE79; --gold:#C99A2E; --gold-deep:#A87D1E;
-    --rust:#B23A2E; --green-ok:#3E6B4F;
-    --board:#8C6A46; --board-deep:#7A5A3A;
-    --radius:14px;
-    --shadow-card: 0 18px 40px -14px rgba(31,42,56,0.35);
-    --shadow-soft: 0 6px 16px -8px rgba(31,42,56,0.25);
-  }
-  *{ box-sizing:border-box; }
-  body{
-    margin:0; font-family:'Inter', sans-serif; color:var(--ink); min-height:100vh;
-    background:
-      radial-gradient(circle at 20% 15%, rgba(255,255,255,0.06) 0, transparent 45%),
-      radial-gradient(circle at 80% 80%, rgba(0,0,0,0.08) 0, transparent 50%),
-      repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0 2px, transparent 2px 6px),
-      linear-gradient(160deg, var(--board) 0%, var(--board-deep) 100%);
-  }
-  .wrap{ max-width:1180px; margin:0 auto; padding:32px 24px 80px; }
-
-  nav{ display:flex; justify-content:center; gap:10px; margin-bottom:44px; flex-wrap:wrap; }
-  nav a{
-    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.08em;
-    text-transform:uppercase; color:var(--paper); text-decoration:none;
-    background:rgba(31,42,56,0.35); border:1px solid rgba(250,246,238,0.35);
-    padding:8px 16px; border-radius:999px; transition:background .15s ease;
-  }
-  nav a:hover{ background:rgba(31,42,56,0.55); }
-  nav a.active{ background:var(--gold); color:var(--ink); border-color:var(--gold); }
-
-  header{ text-align:center; margin-bottom:32px; }
-  h1{
-    font-family:'Fraunces', serif; font-weight:600; font-size:clamp(30px, 5vw, 42px);
-    line-height:1.05; color:var(--paper); margin:0 0 10px; letter-spacing:-0.01em;
-  }
-  header p{ color:rgba(250,246,238,0.82); font-size:15.5px; max-width:480px; margin:0 auto; line-height:1.55; }
-
-  .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:36px; }
-  @media (max-width:760px){ .stats{ grid-template-columns:repeat(2,1fr); } }
-  .stat-card{ background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow-card); padding:18px 16px; text-align:center; }
-  .stat-num{ font-family:'Fraunces', serif; font-size:28px; font-weight:600; }
-  .stat-label{ font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-soft); margin-top:4px; }
-
-  .panel{
-    background:var(--paper); border-radius:var(--radius); box-shadow:var(--shadow-card);
-    padding:26px 24px 30px; margin-bottom:32px;
-  }
-  .panel-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
-  .panel-head h2{ font-family:'Fraunces', serif; font-size:21px; margin:0; }
-  .panel-head span{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--ink-soft); letter-spacing:0.05em; }
-
-  table{ width:100%; border-collapse:collapse; }
-  thead th{
-    text-align:left; font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.06em;
-    text-transform:uppercase; color:var(--ink-soft); padding:0 10px 10px; border-bottom:2px solid var(--tan-deep);
-  }
-  tbody td{ padding:12px 10px; border-bottom:1px solid rgba(201,174,121,0.35); font-size:13.5px; vertical-align:middle; }
-  tbody tr:last-child td{ border-bottom:none; }
-
-  .type-pill{
-    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.05em; text-transform:uppercase;
-    border-radius:999px; padding:3px 9px;
-  }
-  .type-lost{ background:rgba(201,154,46,0.15); color:var(--gold-deep); }
-  .type-found{ background:rgba(62,107,79,0.15); color:var(--green-ok); }
-
-  select.status-select{
-    font-family:'Inter', sans-serif; font-size:12.5px; color:var(--ink);
-    background:#fff; border:1.5px solid var(--tan-deep); border-radius:7px; padding:6px 8px;
-  }
-  select.status-select:focus{ outline:none; border-color:var(--gold-deep); box-shadow:0 0 0 3px rgba(201,154,46,0.18); }
-
-  /* claims panel */
-  .claim-row{
-    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
-    padding:14px 4px; border-bottom:1px solid rgba(201,174,121,0.35);
-  }
-  .claim-row:last-child{ border-bottom:none; }
-  .claim-info{ flex:1; min-width:200px; }
-  .claim-info .name{ font-family:'Fraunces', serif; font-size:16px; font-weight:600; margin:0 0 3px; }
-  .claim-info .meta{ font-size:12.5px; color:var(--ink-soft); margin:0; }
-  .claim-answers{
-    font-size:12.5px; color:var(--ink-soft); margin-top:6px; background:rgba(201,154,46,0.06);
-    border-left:2px solid var(--gold); padding:6px 10px; border-radius:4px;
-  }
-  .claim-actions{ display:flex; gap:8px; }
-  .action-btn{
-    font-family:'Inter', sans-serif; font-weight:600; font-size:12.5px; border:none;
-    border-radius:8px; padding:9px 16px; cursor:pointer; transition:opacity .15s ease;
-  }
-  .action-btn:hover{ opacity:0.85; }
-  .approve-btn{ background:var(--green-ok); color:var(--paper); }
-  .reject-btn{ background:transparent; color:var(--rust); border:1.5px solid var(--rust); }
-  .claim-row.resolved{ opacity:0.55; }
-  .resolved-tag{
-    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
-  }
-
-  footer{
-    text-align:center; margin-top:56px; font-size:12.5px; color:rgba(250,246,238,0.55);
-    font-family:'JetBrains Mono', monospace; letter-spacing:0.04em;
-  }
-
-  @media (max-width:760px){
-    table thead{ display:none; }
-    table, tbody, tr, td{ display:block; width:100%; }
-    tbody tr{ margin-bottom:14px; border:1px solid var(--tan-deep); border-radius:10px; padding:8px 4px; }
-    tbody td{ display:flex; justify-content:space-between; border-bottom:none; padding:6px 10px; }
-    tbody td::before{ content:attr(data-label); font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--ink-soft); text-transform:uppercase; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | CampusConnect - Zeal College</title>
+    
+    <!-- Font Awesome 6 Icons & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <style>
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .admin-table th, .admin-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .admin-table th {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        .admin-table tr:hover {
+            background-color: #f1f5f9;
+        }
+        .status-select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 13px;
+        }
+    </style>
 </head>
 <body>
-<div class="wrap">
 
-  <nav>
-    <a href="index.php">HOME</a>
-    <?php if (isset($_SESSION['username'])): ?>
-        <a href="report_lost.php">REPORT LOST</a>
-        <a href="report_found.php">REPORT FOUND</a>
-    <?php endif; ?>
-    <a href="items.php">BROWSE ITEM</a>
-    <?php if (isset($_SESSION['username'])): ?>
-        <a href="claims.php">Claim</a>
-        <a href="profile.php">Edit Profile</a>
-        <?php if ($_SESSION['username'] === 'admin'): ?>
-            <a href="admin.php" class="active">ADMIN</a>
-        <?php endif; ?>
-        <a href="logout.php">SIGN OUT (<?php echo htmlspecialchars($_SESSION['username']); ?>)</a>
-    <?php else: ?>
-        <a href="login.php">SIGN IN</a>
-        <a href="register.php">SIGN UP</a>
-    <?php endif; ?>
-  </nav>
+<div class="app-container">
+    <!-- Fixed Left Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo-icon">
+                <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <div>
+                <div class="sidebar-brand-name">CampusConnect</div>
+                <div class="sidebar-brand-sub">Zeal College, Pune</div>
+            </div>
+        </div>
 
-  <header>
-    <h1>Admin Dashboard</h1>
-    <p>Review reports, update item status, and verify ownership claims.</p>
-  </header>
+        <nav class="sidebar-menu">
+            <div class="sidebar-section-label">Main Menu</div>
+            <a href="index.php" class="nav-link">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="report_lost.php" class="nav-link">
+                <i class="fa-solid fa-circle-plus"></i> Report Lost
+            </a>
+            <a href="report_found.php" class="nav-link">
+                <i class="fa-solid fa-hand-holding-hand"></i> Report Found
+            </a>
+            <a href="items.php" class="nav-link">
+                <i class="fa-solid fa-boxes-stacked"></i> Browse Items
+            </a>
+            <a href="claims.php" class="nav-link">
+                <i class="fa-solid fa-clipboard-check"></i> Claims
+            </a>
+            <a href="profile.php" class="nav-link">
+                <i class="fa-solid fa-user-gear"></i> Profile
+            </a>
+            <a href="admin.php" class="nav-link active">
+                <i class="fa-solid fa-shield-halved"></i> Admin Portal
+            </a>
+        </nav>
 
-  <div class="stats">
-    <div class="stat-card"><div class="stat-num"><?php echo $total_reports; ?></div><div class="stat-label">Total Reports</div></div>
-    <div class="stat-card"><div class="stat-num"><?php echo $pending_reports; ?></div><div class="stat-label">Pending</div></div>
-    <div class="stat-card"><div class="stat-num"><?php echo $returned_reports; ?></div><div class="stat-label">Returned</div></div>
-    <div class="stat-card"><div class="stat-num"><?php echo $claims_to_verify; ?></div><div class="stat-label">Claims to Verify</div></div>
-  </div>
+        <div class="sidebar-footer">
+            <div class="user-sidebar-card">
+                <div class="user-avatar" style="background:#dc2626;">A</div>
+                <div class="user-details">
+                    <span class="user-name">Administrator</span>
+                    <span class="user-role">admin</span>
+                </div>
+            </div>
+            <a href="logout.php" class="sidebar-btn sidebar-btn-danger">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </aside>
 
-  <div class="panel">
-    <div class="panel-head">
-      <h2>Item Reports</h2>
-      <span>UPDATE STATUS DIRECTLY FROM THE TABLE</span>
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <header class="top-bar">
+            <div>
+                <button class="mobile-toggle" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <span class="top-bar-title">Admin Management Portal</span>
+            </div>
+            <div class="top-bar-subtitle">
+                <i class="fa-solid fa-location-dot"></i> Zeal College of Engineering and Research, Narhe, Pune
+            </div>
+        </header>
+
+        <div class="page-container">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-blue"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    <div>
+                        <div class="stat-val"><?php echo $total_reports; ?></div>
+                        <div class="stat-label">Total Reports</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-amber"><i class="fa-solid fa-clock"></i></div>
+                    <div>
+                        <div class="stat-val"><?php echo $pending_reports; ?></div>
+                        <div class="stat-label">Pending Review</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-green"><i class="fa-solid fa-circle-check"></i></div>
+                    <div>
+                        <div class="stat-val"><?php echo $returned_reports; ?></div>
+                        <div class="stat-label">Items Returned</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-purple"><i class="fa-solid fa-id-card-clip"></i></div>
+                    <div>
+                        <div class="stat-val"><?php echo $claims_to_verify; ?></div>
+                        <div class="stat-label">Claims to Verify</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Item Statuses -->
+            <div class="card" style="margin-bottom: 32px;">
+                <h3 class="card-title"><i class="fa-solid fa-list-check"></i> Manage Item Statuses</h3>
+                <p class="card-subtitle">Review lost & found item reports and update their status.</p>
+
+                <div style="overflow-x:auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Type</th>
+                                <th>Reported By</th>
+                                <th>Location</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($db_reports as $report): ?>
+                                <tr>
+                                    <td><strong><?php echo htmlspecialchars($report['item']); ?></strong></td>
+                                    <td><span class="badge <?php echo $report['type'] === 'lost' ? 'badge-lost' : 'badge-found'; ?>"><?php echo strtoupper($report['type']); ?></span></td>
+                                    <td><?php echo htmlspecialchars($report['by']); ?></td>
+                                    <td><?php echo htmlspecialchars($report['location']); ?></td>
+                                    <td><?php echo $report['date']; ?></td>
+                                    <td>
+                                        <select class="status-select" onchange="updateItemStatus(<?php echo $report['id']; ?>, '<?php echo $report['type']; ?>', this.value)">
+                                            <option value="Pending" <?php echo $report['status'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
+                                            <option value="Matched" <?php echo $report['status'] === 'Matched' ? 'selected' : ''; ?>>Matched</option>
+                                            <option value="Claimed" <?php echo $report['status'] === 'Claimed' ? 'selected' : ''; ?>>Claimed</option>
+                                            <option value="Returned" <?php echo $report['status'] === 'Returned' ? 'selected' : ''; ?>>Returned</option>
+                                        </select>
+                                    </td>
+                                    <td><span style="font-size:12px; color:var(--text-muted);">Auto-saved</span></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Claims Verification -->
+            <div class="card">
+                <h3 class="card-title"><i class="fa-solid fa-file-signature"></i> Student Ownership Claims</h3>
+                <p class="card-subtitle">Approve or reject verification claims submitted by students.</p>
+
+                <div style="overflow-x:auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Claim ID</th>
+                                <th>Found Item</th>
+                                <th>Claimant</th>
+                                <th>Color Description</th>
+                                <th>Distinguishing Marks</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($db_claims as $claim): ?>
+                                <tr>
+                                    <td>#<?php echo $claim['id']; ?></td>
+                                    <td><strong><?php echo htmlspecialchars($claim['item']); ?></strong></td>
+                                    <td><?php echo htmlspecialchars($claim['by']); ?></td>
+                                    <td><?php echo htmlspecialchars($claim['color']); ?></td>
+                                    <td><?php echo htmlspecialchars($claim['contents']); ?></td>
+                                    <td><span class="badge <?php echo $claim['status'] === 'Approved' ? 'badge-found' : ($claim['status'] === 'Rejected' ? 'badge-lost' : 'badge-returned'); ?>"><?php echo strtoupper($claim['status']); ?></span></td>
+                                    <td>
+                                        <?php if ($claim['status'] === 'Pending'): ?>
+                                            <button class="btn btn-success" style="padding:6px 12px; font-size:12px;" onclick="resolveClaim(<?php echo $claim['id']; ?>, 'Approved')">Approve</button>
+                                            <button class="btn btn-outline" style="padding:6px 12px; font-size:12px; border-color:var(--danger); color:var(--danger);" onclick="resolveClaim(<?php echo $claim['id']; ?>, 'Rejected')">Reject</button>
+                                        <?php else: ?>
+                                            <span style="font-size:13px; color:var(--text-muted);"><?php echo $claim['status']; ?></span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer-campus">
+            <div class="footer-brand">CampusConnect Lost & Found</div>
+            <div class="footer-college">Zeal College of Engineering and Research, Narhe, Pune</div>
+            <div class="footer-credits">
+                Developed by FYA Team 4 &bull; &copy; 2026 All Rights Reserved
+            </div>
+        </footer>
     </div>
-    <table>
-      <thead>
-        <tr><th>Item</th><th>Type</th><th>Reported by</th><th>Location</th><th>Date</th><th>Status</th></tr>
-      </thead>
-      <tbody id="reportsBody"></tbody>
-    </table>
-  </div>
-
-  <div class="panel">
-    <div class="panel-head">
-      <h2>Claims Awaiting Verification</h2>
-      <span>APPROVE ONLY IF ANSWERS &amp; PHOTO MATCH</span>
-    </div>
-    <div id="claimsList"></div>
-  </div>
-
-  <footer>CAMPUS LOST &amp; FOUND · COLLEGE OFFICE</footer>
 </div>
 
 <script>
-(function(){
-  var reports = <?php echo json_encode($db_reports); ?>;
+function updateItemStatus(id, type, status) {
+    const formData = new FormData();
+    formData.append('action', 'update_status');
+    formData.append('id', id);
+    formData.append('type', type);
+    formData.append('status', status);
 
-  var reportsBody = document.getElementById('reportsBody');
-  reportsBody.innerHTML = '';
-  
-  reports.forEach(function(r){
-    var tr = document.createElement('tr');
-    
-    // Build options based on item type
-    var optionsHtml = '';
-    if (r.type === 'lost') {
-      optionsHtml = 
-        '<option value="Pending"' + (r.status === 'Pending' ? ' selected' : '') + '>Pending</option>' +
-        '<option value="Matched"' + (r.status === 'Matched' ? ' selected' : '') + '>Matched</option>' +
-        '<option value="Returned"' + (r.status === 'Returned' ? ' selected' : '') + '>Returned</option>';
-    } else {
-      optionsHtml = 
-        '<option value="Pending"' + (r.status === 'Pending' ? ' selected' : '') + '>Pending</option>' +
-        '<option value="Claimed"' + (r.status === 'Claimed' ? ' selected' : '') + '>Claimed</option>' +
-        '<option value="Returned"' + (r.status === 'Returned' ? ' selected' : '') + '>Returned</option>';
-    }
-
-    tr.innerHTML =
-      '<td data-label="Item"><strong>' + escapeHtml(r.item) + '</strong></td>' +
-      '<td data-label="Type"><span class="type-pill type-' + r.type + '">' + (r.type === 'lost' ? 'Lost' : 'Found') + '</span></td>' +
-      '<td data-label="Reported by">' + escapeHtml(r.by) + '</td>' +
-      '<td data-label="Location">' + escapeHtml(r.location) + '</td>' +
-      '<td data-label="Date">' + escapeHtml(r.date) + '</td>' +
-      '<td data-label="Status">' +
-        '<select class="status-select" data-id="' + r.id + '" data-type="' + r.type + '">' +
-          optionsHtml +
-        '</select>' +
-      '</td>';
-    reportsBody.appendChild(tr);
-  });
-
-  // Handle reports status change via AJAX
-  reportsBody.querySelectorAll('.status-select').forEach(function(select) {
-    select.addEventListener('change', function() {
-      var id = this.getAttribute('data-id');
-      var type = this.getAttribute('data-type');
-      var status = this.value;
-
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', 'admin.php', true);
-      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-      xhr.onload = function() {
-        if (xhr.status === 200) {
-          try {
-            var res = JSON.parse(xhr.responseText);
-            if (!res.success) {
-              alert('Error: ' + res.message);
-            }
-          } catch(e) {
-            console.error('Invalid response', xhr.responseText);
-          }
+    fetch('admin.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed: ' + data.message);
         }
-      };
-      xhr.send('action=update_status&id=' + id + '&type=' + type + '&status=' + status);
     });
-  });
+}
 
-  // Render Claims list
-  var claims = <?php echo json_encode($db_claims); ?>;
-  var claimsList = document.getElementById('claimsList');
+function resolveClaim(claim_id, status) {
+    const formData = new FormData();
+    formData.append('action', 'resolve_claim');
+    formData.append('claim_id', claim_id);
+    formData.append('status', status);
 
-  function renderClaims(){
-    claimsList.innerHTML = '';
-    if(claims.length === 0){
-      claimsList.innerHTML = '<p style="font-size:13.5px;color:var(--ink-soft);padding:10px 4px;">No claims waiting for review.</p>';
-      return;
-    }
-    claims.forEach(function(c, idx){
-      var row = document.createElement('div');
-      row.className = 'claim-row';
-      if (c.status !== 'Pending') {
-          row.classList.add('resolved');
-      }
-
-      var actionHtml = '';
-      if (c.status === 'Pending') {
-          actionHtml = 
-            '<div class="claim-actions">' +
-              '<button class="action-btn approve-btn" data-idx="' + idx + '" data-claim-id="' + c.id + '">Approve</button>' +
-              '<button class="action-btn reject-btn" data-idx="' + idx + '" data-claim-id="' + c.id + '">Reject</button>' +
-            '</div>';
-      } else {
-          var approved = c.status === 'Approved';
-          actionHtml = 
-            '<span class="resolved-tag" style="color:' + (approved ? 'var(--green-ok)' : 'var(--rust)') + '">' +
-            (approved ? '✓ Approved' : '✕ Rejected') + '</span>';
-      }
-
-      var imageHtml = '';
-      if (c.image && c.image !== '') {
-          imageHtml = '<br><a href="uploads/' + encodeURIComponent(c.image) + '" target="_blank">' +
-            '<img src="uploads/' + encodeURIComponent(c.image) + '" style="width:120px; height:120px; object-fit:cover; border-radius:6px; margin-top:8px; display:block;" alt="Proof Image" />' +
-            '</a>';
-      }
-
-      row.innerHTML =
-        '<div class="claim-info">' +
-          '<p class="name">' + escapeHtml(c.item) + '</p>' +
-          '<p class="meta">Claimed by ' + escapeHtml(c.by) + ' · ' + escapeHtml(c.submitted) + '</p>' +
-          '<div class="claim-answers">Colour: "' + escapeHtml(c.color) + '"<br>Distinguishing Marks: "' + escapeHtml(c.contents) + '"' + imageHtml + '</div>' +
-        '</div>' +
-        actionHtml;
-      claimsList.appendChild(row);
+    fetch('admin.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed: ' + data.message);
+        }
     });
+}
 
-    claimsList.querySelectorAll('.action-btn').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var row = btn.closest('.claim-row');
-        var claimId = btn.getAttribute('data-claim-id');
-        var approved = btn.classList.contains('approve-btn');
-        var status = approved ? 'Approved' : 'Rejected';
-
-        // Submit via AJAX
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'admin.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onload = function() {
-          if (xhr.status === 200) {
-            try {
-              var res = JSON.parse(xhr.responseText);
-              if (res.success) {
-                row.classList.add('resolved');
-                row.querySelector('.claim-actions').outerHTML =
-                  '<span class="resolved-tag" style="color:' + (approved ? 'var(--green-ok)' : 'var(--rust)') + '">' +
-                  (approved ? '✓ Approved' : '✕ Rejected') + '</span>';
-              } else {
-                alert('Error: ' + res.message);
-              }
-            } catch(e) {
-              console.error(e);
-            }
-          }
-        };
-        xhr.send('action=resolve_claim&claim_id=' + claimId + '&status=' + status);
-      });
-    });
-  }
-
-  function escapeHtml(str){
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  renderClaims();
-})();
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+}
 </script>
 </body>
 </html>

@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Lost Item | CampusConnect - Zeal College</title>
+    
+    <!-- Font Awesome 6 Icons & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -3080,380 +3090,139 @@ CAMPUS LOST & FOUND · COLLEGE OFFICE
 </footer>
 
 
+<div class="app-container">
+    <!-- Fixed Left Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo-icon">
+                <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <div>
+                <div class="sidebar-brand-name">CampusConnect</div>
+                <div class="sidebar-brand-sub">Zeal College, Pune</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-menu">
+            <div class="sidebar-section-label">Main Menu</div>
+            <a href="index.html" class="nav-link">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="report lost.html" class="nav-link active">
+                <i class="fa-solid fa-circle-plus"></i> Report Lost
+            </a>
+            <a href="report found.html" class="nav-link">
+                <i class="fa-solid fa-hand-holding-hand"></i> Report Found
+            </a>
+            <a href="items.html" class="nav-link">
+                <i class="fa-solid fa-boxes-stacked"></i> Browse Items
+            </a>
+            <a href="claims.html" class="nav-link">
+                <i class="fa-solid fa-clipboard-check"></i> Claims
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="login.html" class="sidebar-btn sidebar-btn-primary">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <header class="top-bar">
+            <div>
+                <button class="mobile-toggle" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <span class="top-bar-title">Report Lost Item</span>
+            </div>
+            <div class="top-bar-subtitle">
+                <i class="fa-solid fa-location-dot"></i> Zeal College of Engineering and Research, Narhe, Pune
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="form-card-container">
+                <div class="card">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-circle-plus" style="color:var(--primary);"></i> Report Misplaced Item
+                    </h2>
+                    <p class="card-subtitle">Provide details about the item you lost on Zeal campus to alert the community and office.</p>
+
+                    <form action="report_lost.php" method="POST" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="item_name" class="form-label">Item Name</label>
+                            <div class="input-icon-group">
+                                <i class="fa-solid fa-tag"></i>
+                                <input type="text" id="item_name" name="item_name" class="form-control" placeholder="e.g. Grey Backpack or Casio Calculator" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description" class="form-label">Detailed Description</label>
+                            <div class="input-icon-group">
+                                <i class="fa-solid fa-align-left" style="top:18px;"></i>
+                                <textarea id="description" name="description" class="form-control" placeholder="Describe color, brand, stickers, unique marks, or contents..." required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="date" class="form-label">Date Lost</label>
+                            <div class="input-icon-group">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                <input type="date" id="date" name="date" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location" class="form-label">Location Lost on Campus</label>
+                            <div class="input-icon-group">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <input type="text" id="location" name="location" class="form-control" placeholder="e.g. Central Library, Main Gate, Canteen, CS Lab" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="photo" class="form-label">Upload Image (Optional)</label>
+                            <div class="input-icon-group">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <input type="file" id="photo" name="photo" class="form-control" style="padding-top:10px;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contact" class="form-label">Contact Email / Phone Number</label>
+                            <div class="input-icon-group">
+                                <i class="fa-solid fa-phone"></i>
+                                <input type="text" id="contact" name="contact" class="form-control" placeholder="e.g. cs21b045@zeal.edu.in or 9876543210" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block" style="padding:14px; margin-top: 10px;">
+                            <i class="fa-solid fa-paper-plane"></i> Submit Lost Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer-campus">
+            <div class="footer-brand">CampusConnect Lost & Found</div>
+            <div class="footer-college">Zeal College of Engineering and Research, Narhe, Pune</div>
+            <div class="footer-credits">
+                Developed by FYA Team 4 &bull; &copy; 2026 All Rights Reserved
+            </div>
+        </footer>
+    </div>
 </div>
 
-
-
 <script>
-const form = document.getElementById("lostForm");
-
-const itemName = document.getElementById("itemName");
-const description = document.getElementById("description");
-const dateLost = document.getElementById("dateLost");
-const locationInput = document.getElementById("location");
-const contact = document.getElementById("contact");
-
-const imageInput = document.getElementById("imageInput");
-const uploadZone = document.getElementById("uploadZone");
-
-const previewBox = document.getElementById("previewBox");
-const previewImg = document.getElementById("previewImg");
-const previewName = document.getElementById("previewName");
-
-const success = document.getElementById("lostSuccess");
-
-let uploadedFile = null;
-
-
-
-function invalid(field){
-
-field.classList.add("invalid");
-field.classList.remove("valid");
-
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
 }
-
-
-
-function valid(field){
-
-field.classList.remove("invalid");
-field.classList.add("valid");
-
-}
-
-
-
-function checkItem(){
-
-let field=document.getElementById("f-itemName");
-
-if(itemName.value.trim().length < 2){
-
-invalid(field);
-return false;
-
-}
-
-valid(field);
-return true;
-
-}
-
-
-
-function checkDescription(){
-
-let field=document.getElementById("f-description");
-
-if(description.value.trim().length < 10){
-
-invalid(field);
-return false;
-
-}
-
-valid(field);
-return true;
-
-}
-
-
-
-function checkDate(){
-
-let field=document.getElementById("f-dateLost");
-
-if(!dateLost.value){
-
-invalid(field);
-return false;
-
-}
-
-
-let selected=new Date(dateLost.value);
-let today=new Date();
-
-
-if(selected>today){
-
-invalid(field);
-return false;
-
-}
-
-
-valid(field);
-return true;
-
-}
-
-
-
-
-function checkLocation(){
-
-let field=document.getElementById("f-location");
-
-
-if(locationInput.value.trim().length < 2){
-
-invalid(field);
-return false;
-
-}
-
-
-valid(field);
-return true;
-
-}
-
-
-
-
-
-function checkContact(){
-
-let field=document.getElementById("f-contact");
-
-
-let value=contact.value.trim();
-
-
-let email=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-let phone=/^[0-9+\-\s]{7,15}$/;
-
-
-if(!email.test(value) && !phone.test(value)){
-
-
-invalid(field);
-
-return false;
-
-}
-
-
-valid(field);
-
-return true;
-
-}
-
-
-
-
-
-function checkImage(){
-
-let field=document.getElementById("f-image");
-
-
-if(!uploadedFile){
-
-invalid(field);
-
-return false;
-
-}
-
-
-valid(field);
-
-return true;
-
-}
-
-
-
-
-
-uploadZone.addEventListener("click",()=>{
-
-imageInput.click();
-
-});
-
-
-
-
-
-imageInput.addEventListener("change",(e)=>{
-
-handleFile(e.target.files[0]);
-
-});
-
-
-
-
-
-function handleFile(file){
-
-
-if(!file){
-
-return;
-
-}
-
-
-let allowed=[
-"image/jpeg",
-"image/png"
-];
-
-
-if(!allowed.includes(file.type) || file.size>5*1024*1024){
-
-
-uploadedFile=null;
-
-previewBox.classList.remove("show");
-
-invalid(document.getElementById("f-image"));
-
-return;
-
-}
-
-
-
-uploadedFile=file;
-
-
-valid(document.getElementById("f-image"));
-
-
-
-let reader=new FileReader();
-
-
-
-reader.onload=function(e){
-
-
-previewImg.src=e.target.result;
-
-previewName.textContent=file.name;
-
-previewBox.classList.add("show");
-
-
-};
-
-
-
-reader.readAsDataURL(file);
-
-
-}
-uploadZone.addEventListener("dragover",(e)=>{
-
-e.preventDefault();
-
-uploadZone.style.borderColor="#A87D1E";
-
-});
-
-
-
-uploadZone.addEventListener("dragleave",()=>{
-
-uploadZone.style.borderColor="";
-
-});
-
-
-
-uploadZone.addEventListener("drop",(e)=>{
-
-e.preventDefault();
-
-uploadZone.style.borderColor="";
-
-handleFile(e.dataTransfer.files[0]);
-
-});
-
-
-
-
-
-form.addEventListener("submit", function(e){
-
-    let result=[
-        checkItem(),
-        checkDescription(),
-        checkDate(),
-        checkLocation(),
-        checkContact(),
-        checkImage()
-    ];
-
-    if(!result.every(Boolean)){
-        e.preventDefault();
-    }
-
-});
-
-success.classList.remove("show");
-
-
-
-let result=[
-
-checkItem(),
-
-checkDescription(),
-
-checkDate(),
-
-checkLocation(),
-
-checkContact(),
-
-checkImage()
-
-];
-
-
-
-if(result.every(Boolean)){
-
-
-success.classList.add("show");
-
-
-form.reset();
-
-
-previewBox.classList.remove("show");
-
-
-uploadedFile=null;
-
-
-
-document.querySelectorAll(".field").forEach((field)=>{
-
-field.classList.remove("valid");
-
-});
-
-
-}
-
-
-});
-
-
-
 </script>
-
 </body>
 
 

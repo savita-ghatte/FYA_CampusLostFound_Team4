@@ -1,3 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | CampusConnect - Zeal College</title>
+    
+    <!-- Font Awesome 6 Icons & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
 
 <!DOCTYPE html>
 <html lang="en">
@@ -625,132 +636,85 @@
 </style>
 </head>
 <body>
-<div class="wrap">
 
-    <nav>
- <a href="index.html">HOME</a>
-<a href="login.html">SIGN IN</a>
-<a href="report lost.html">REPORT LOST</a>
-<a href="report found.html">REPORT FOUND</a>
-<a href="items.html">BROWSE ITEM</a>
-<a href="admin.html">ADMIN</a>
- <a href="claims.html">Claim</a>
-  </nav>
+<div class="app-container">
+    <!-- Fixed Left Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo-icon">
+                <i class="fa-solid fa-building-columns"></i>
+            </div>
+            <div>
+                <div class="sidebar-brand-name">CampusConnect</div>
+                <div class="sidebar-brand-sub">Zeal College, Pune</div>
+            </div>
+        </div>
 
-  <header>
-    <h1>Admin Dashboard</h1>
-    <p>Review reports, update item status, and verify ownership claims.</p>
-  </header>
+        <nav class="sidebar-menu">
+            <div class="sidebar-section-label">Main Menu</div>
+            <a href="index.html" class="nav-link">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="report lost.html" class="nav-link">
+                <i class="fa-solid fa-circle-plus"></i> Report Lost
+            </a>
+            <a href="report found.html" class="nav-link">
+                <i class="fa-solid fa-hand-holding-hand"></i> Report Found
+            </a>
+            <a href="items.html" class="nav-link">
+                <i class="fa-solid fa-boxes-stacked"></i> Browse Items
+            </a>
+            <a href="claims.html" class="nav-link">
+                <i class="fa-solid fa-clipboard-check"></i> Claims
+            </a>
+            <a href="admin.html" class="nav-link active">
+                <i class="fa-solid fa-shield-halved"></i> Admin Portal
+            </a>
+        </nav>
 
-  <div class="stats">
-    <div class="stat-card"><div class="stat-num">128</div><div class="stat-label">Total Reports</div></div>
-    <div class="stat-card"><div class="stat-num">41</div><div class="stat-label">Pending</div></div>
-    <div class="stat-card"><div class="stat-num">86</div><div class="stat-label">Returned</div></div>
-    <div class="stat-card"><div class="stat-num">1</div><div class="stat-label">Claims to Verify</div></div>
-  </div>
+        <div class="sidebar-footer">
+            <a href="login.html" class="sidebar-btn sidebar-btn-primary">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In
+            </a>
+        </div>
+    </aside>
 
-  <div class="panel">
-    <div class="panel-head">
-      <h2>Item Reports</h2>
-      <span>UPDATE STATUS DIRECTLY FROM THE TABLE</span>
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <header class="top-bar">
+            <div>
+                <button class="mobile-toggle" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <span class="top-bar-title">Admin Management Portal</span>
+            </div>
+            <div class="top-bar-subtitle">
+                <i class="fa-solid fa-location-dot"></i> Zeal College of Engineering and Research, Narhe, Pune
+            </div>
+        </header>
+
+        <div class="page-container">
+            <div class="card">
+                <h3 class="card-title"><i class="fa-solid fa-shield-halved"></i> Administrator Control Panel</h3>
+                <p class="card-subtitle">Please sign in with administrator credentials on admin.php to access live administrative functions.</p>
+                <a href="login.html" class="btn btn-primary">Sign In as Administrator</a>
+            </div>
+        </div>
+
+        <footer class="footer-campus">
+            <div class="footer-brand">CampusConnect Lost & Found</div>
+            <div class="footer-college">Zeal College of Engineering and Research, Narhe, Pune</div>
+            <div class="footer-credits">
+                Developed by FYA Team 4 &bull; &copy; 2026 All Rights Reserved
+            </div>
+        </footer>
     </div>
-    <table>
-      <thead>
-        <tr><th>Item</th><th>Type</th><th>Reported by</th><th>Location</th><th>Date</th><th>Status</th></tr>
-      </thead>
-      <tbody id="reportsBody"></tbody>
-    </table>
-  </div>
-
-  <div class="panel">
-    <div class="panel-head">
-      <h2>Claims Awaiting Verification</h2>
-      <span>APPROVE ONLY IF ANSWERS &amp; PHOTO MATCH</span>
-    </div>
-    <div id="claimsList"></div>
-  </div>
-
-  <footer>CAMPUS LOST &amp; FOUND · COLLEGE OFFICE</footer>
 </div>
 
 <script>
-(function(){
-  var reports = [
-    { item:"Grey Backpack", type:"lost", by:"CS21B045", location:"Library", date:"15 Jul", status:"pending" },
-    { item:"Bunch of Keys", type:"found", by:"EC20A012", location:"Canteen", date:"13 Jul", status:"returned" },
-    { item:"Blue Water Bottle", type:"found", by:"ME22B078", location:"Sports Ground", date:"11 Jul", status:"unclaimed" },
-    { item:"Black Umbrella", type:"lost", by:"CS21B045", location:"Main Gate", date:"16 Jul", status:"pending" },
-    { item:"Scientific Calculator", type:"lost", by:"EE19B003", location:"Exam Hall B", date:"12 Jul", status:"returned" },
-    { item:"Wired Earphones", type:"found", by:"IT21A056", location:"Cafeteria", date:"14 Jul", status:"pending" }
-  ];
-
-  var reportsBody = document.getElementById('reportsBody');
-  reports.forEach(function(r){
-    var tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td data-label="Item"><strong>' + r.item + '</strong></td>' +
-      '<td data-label="Type"><span class="type-pill type-' + r.type + '">' + (r.type === 'lost' ? 'Lost' : 'Found') + '</span></td>' +
-      '<td data-label="Reported by">' + r.by + '</td>' +
-      '<td data-label="Location">' + r.location + '</td>' +
-      '<td data-label="Date">' + r.date + '</td>' +
-      '<td data-label="Status">' +
-        '<select class="status-select">' +
-          '<option value="pending"' + (r.status === 'pending' ? ' selected' : '') + '>Pending</option>' +
-          '<option value="returned"' + (r.status === 'returned' ? ' selected' : '') + '>Returned</option>' +
-          '<option value="unclaimed"' + (r.status === 'unclaimed' ? ' selected' : '') + '>Unclaimed</option>' +
-        '</select>' +
-      '</td>';
-    reportsBody.appendChild(tr);
-  });
-
-  var claims = [
-    {
-      item:"Blue Water Bottle",
-      by:"ME22B080",
-      submitted:"2 hours ago",
-      color:"Sky blue with a dented cap",
-      contents:"Has a hostel room number sticker on the base"
-    }
-  ];
-
-  var claimsList = document.getElementById('claimsList');
-
-  function renderClaims(){
-    claimsList.innerHTML = '';
-    if(claims.length === 0){
-      claimsList.innerHTML = '<p style="font-size:13.5px;color:var(--ink-soft);padding:10px 4px;">No claims waiting for review.</p>';
-      return;
-    }
-    claims.forEach(function(c, idx){
-      var row = document.createElement('div');
-      row.className = 'claim-row';
-      row.innerHTML =
-        '<div class="claim-info">' +
-          '<p class="name">' + c.item + '</p>' +
-          '<p class="meta">Claimed by ' + c.by + ' · ' + c.submitted + '</p>' +
-          '<div class="claim-answers">Colour: "' + c.color + '"<br>Details: "' + c.contents + '"</div>' +
-        '</div>' +
-        '<div class="claim-actions">' +
-          '<button class="action-btn approve-btn" data-idx="' + idx + '">Approve</button>' +
-          '<button class="action-btn reject-btn" data-idx="' + idx + '">Reject</button>' +
-        '</div>';
-      claimsList.appendChild(row);
-    });
-
-    claimsList.querySelectorAll('.action-btn').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var row = btn.closest('.claim-row');
-        var approved = btn.classList.contains('approve-btn');
-        row.classList.add('resolved');
-        row.querySelector('.claim-actions').innerHTML =
-          '<span class="resolved-tag" style="color:' + (approved ? 'var(--green-ok)' : 'var(--rust)') + '">' +
-          (approved ? '✓ Approved' : '✕ Rejected') + '</span>';
-      });
-    });
-  }
-
-  renderClaims();
-})();
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+}
 </script>
 </body>
 
