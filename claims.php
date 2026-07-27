@@ -20,6 +20,7 @@ $error_msg = null;
 
 // Get item details
 $item_id = intval($_GET['item_id'] ?? $_POST['item_id'] ?? 0);
+$item_name = $_GET['item'] ?? 'Selected Item';
 $item_name = $_GET['item'] ?? '';
 
 // Fetch available found items for claim selection
@@ -56,6 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $distinguishing_marks = trim($_POST['contentsAnswer'] ?? '');
     
     // Server-side validation
+    if (empty($colour) || empty($distinguishing_marks) || $item_id <= 0) {
+        $error_msg = "Please fill in all required fields and select a valid item.";
     if ($item_id <= 0) {
         $error_msg = "Please select a valid item to claim.";
     } elseif (empty($colour) || empty($distinguishing_marks)) {
@@ -76,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Generate a unique filename to prevent overwrite
             $filename = uniqid('claim_', true) . '.' . $file_ext;
+            $upload_path = 'uploads/' . $filename;
             $upload_dir = __DIR__ . '/uploads';
             if (!is_dir($upload_dir)) {
                 @mkdir($upload_dir, 0777, true);
@@ -129,6 +133,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="sidebar-brand-sub">Zeal College, Pune</div>
             </div>
         </div>
+    <?php endif; ?>
+
+    <form id="claimForm" method="POST" action="claims.php" enctype="multipart/form-data" novalidate>
+      <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item_id); ?>">
+      <input type="hidden" name="item" value="<?php echo htmlspecialchars($item_name); ?>">
+      <div class="field" id="f-item">
+        <label for="itemSelect">Select Item to Claim <span class="req">*</span></label>
+        <select id="itemSelect" name="item_id" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--tan-deep); font-size:15px; background:white; font-family:'Inter',sans-serif; color:var(--ink);" onchange="var selectedText = this.options[this.selectedIndex].text; document.getElementById('itemNameDisplay').textContent = selectedText;">
+          <?php if (empty($found_items_list)): ?>
+            <option value="0">No found items currently available</option>
+          <?php else: ?>
+            <?php foreach ($found_items_list as $fitem): ?>
+              <option value="<?php echo $fitem['item_id']; ?>" <?php echo ($item_id == $fitem['item_id']) ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($fitem['item_name'] . ' (Found at ' . $fitem['location'] . ')'); ?>
+              </option>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </select>
+        <p class="error-msg" id="err-item" role="alert">Please select an item to claim.</p>
+      </div>
 
         <nav class="sidebar-menu">
             <div class="sidebar-section-label">Main Menu</div>
@@ -274,6 +298,177 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
 }
+(function(){
+  function setInvalid(el, msg){
+    el.classList.add('invalid');
+    el.classList.remove('valid');
+    var input = el.querySelector('input, textarea');
+    if(input) input.setAttribute('aria-invalid', 'true');
+    if(msg){ el.querySelector('.error-msg').textContent = msg; }
+  }
+  function setValid(el){
+    el.classList.remove('invalid');
+    el.classList.add('valid');
+    var input = el.querySelector('input, textarea');
+    if(input) input.setAttribute('aria-invalid', 'false');
+  }
+  function clearState(el){
+    el.classList.remove('invalid', 'valid');
+    var input = el.querySelector('input, textarea');
+    if(input) input.removeAttribute('aria-invalid');
+  }
+
+  var fColor = document.getElementById('f-color');
+  var fContents = document.getElementById('f-contents');
+  var fProof = document.getElementById('f-proof');
+  var claimForm = document.getElementById('claimForm');
+  var claimSuccess = document.getElementById('claimSuccess');
+  var submitBtn = document.getElementById('submitBtn');
+  var contentsInput = document.getElementById('contentsAnswer');
+  var contentsCount = document.getElementById('contentsCount');
+
+  function validateColor(){
+    var ok = document.getElementById('colorAnswer').value.trim().length >= 2;
+    ok ? setValid(fColor) : setInvalid(fColor);
+    return ok;
+  }
+
+  function validateContents(){
+    var len = contentsInput.value.trim().length;
+    var ok = len >= 5;
+    ok ? setValid(fContents) : setInvalid(fContents);
+    return ok;
+  }
+
+  function updateCharCount(){
+    var len = contentsInput.value.trim().length;
+    contentsCount.textContent = len + ' / 5';
+    contentsCount.style.color = len >= 5 ? 'var(--green-ok)' : 'var(--ink-soft)';
+  }
+
+  document.getElementById('colorAnswer').addEventListener('blur', validateColor);
+  contentsInput.addEventListener('blur', validateContents);
+  contentsInput.addEventListener('input', updateCharCount);
+
+  var uploadedFile = null;
+
+  function formatSize(bytes){
+    if(bytes < 1024) return bytes + ' B';
+    if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function validateProof(){
+    var hasFile = !!uploadedFile || document.getElementById('imageInput').value !== '';
+    hasFile ? setValid(fProof) : setInvalid(fProof);
+    return hasFile;
+  }
+
+  var uploadZone = document.getElementById('uploadZone');
+  var imageInput = document.getElementById('imageInput');
+  var previewBox = document.getElementById('previewBox');
+  var previewImg = document.getElementById('previewImg');
+  var previewName = document.getElementById('previewName');
+  var previewSize = document.getElementById('previewSize');
+  var removeFile = document.getElementById('removeFile');
+
+  function handleFile(file){
+    if(!file){ return; }
+    var validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    var maxSize = 5 * 1024 * 1024;
+
+    var fileExt = file.name.split('.').pop().toLowerCase();
+
+    if((validTypes.indexOf(file.type) === -1 && ['jpg', 'jpeg', 'png'].indexOf(fileExt) === -1) || file.size > maxSize){
+      uploadedFile = null;
+      previewBox.classList.remove('show');
+      setInvalid(fProof, 'Please attach a JPG or PNG under 5MB.');
+      imageInput.value = '';
+      return;
+    }
+
+    uploadedFile = file;
+    setValid(fProof);
+
+    var reader = new FileReader();
+    reader.onload = function(e){
+      previewImg.src = e.target.result;
+      previewName.textContent = file.name;
+      previewSize.textContent = formatSize(file.size);
+      previewBox.classList.add('show');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  uploadZone.addEventListener('click', function(){ imageInput.click(); });
+  uploadZone.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      imageInput.click();
+    }
+  });
+  imageInput.addEventListener('change', function(e){ handleFile(e.target.files[0]); });
+
+  ['dragover', 'dragenter'].forEach(function(evt){
+    uploadZone.addEventListener(evt, function(e){
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach(function(evt){
+    uploadZone.addEventListener(evt, function(e){
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+    });
+  });
+  uploadZone.addEventListener('drop', function(e){ handleFile(e.dataTransfer.files[0]); });
+
+  removeFile.addEventListener('click', function(){
+    uploadedFile = null;
+    imageInput.value = '';
+    previewBox.classList.remove('show');
+    clearState(fProof);
+  });
+
+  function validateItem(){
+    var sel = document.getElementById('itemSelect');
+    var fItem = document.getElementById('f-item');
+    if(!sel || !fItem) return true;
+    var ok = parseInt(sel.value, 10) > 0;
+    ok ? setValid(fItem) : setInvalid(fItem, 'Please select an item to claim.');
+    return ok;
+  }
+
+  var itemSel = document.getElementById('itemSelect');
+  if(itemSel) itemSel.addEventListener('change', validateItem);
+
+  claimForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    claimSuccess.classList.remove('show');
+
+    var results = [validateColor(), validateContents(), validateProof()];
+    var results = [validateItem(), validateColor(), validateContents(), validateProof()];
+    var allValid = results.every(Boolean);
+
+    if(allValid){
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
+
+      setTimeout(function(){
+        claimForm.submit();
+      }, 400);
+    } else {
+      var firstInvalid = document.querySelector('.field.invalid');
+      if(firstInvalid){
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        var input = firstInvalid.querySelector('input, textarea');
+        if(input) input.focus();
+      }
+    }
+  });
+
+  updateCharCount();
+})();
 </script>
 </body>
 </html>
