@@ -223,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label for="contact" class="form-label">Finder Contact Email / Phone</label>
                             <div class="input-icon-group">
                                 <i class="fa-solid fa-phone"></i>
-                                <input type="text" id="contact" name="contact" class="form-control" placeholder="e.g. finder@zeal.edu.in or 9876543210" value="<?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?>" required>
+                                <input type="text" id="contact" name="contact" class="form-control" placeholder="e.g. finder@zeal.edu.in or 9876543210" value="<?php echo htmlspecialchars($_SESSION['email'] ?? $_SESSION['username'] ?? ''); ?>" required>
                             </div>
                         </div>
 

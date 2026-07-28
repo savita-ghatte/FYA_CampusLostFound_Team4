@@ -162,13 +162,13 @@ if ($found_items_query) {
 
 // 5. Fetch Pending & All Claims for verification list
 $db_claims = [];
-$claims_query = $conn->query("SELECT c.claim_id, c.colour, c.distinguishing_marks, c.image, c.claim_status, f.item_name, f.contact FROM claims c JOIN found_items f ON c.item_id = f.item_id ORDER BY c.claim_id DESC");
+$claims_query = $conn->query("SELECT c.claim_id, c.claimant, c.colour, c.distinguishing_marks, c.image, c.claim_status, f.item_name, f.contact FROM claims c JOIN found_items f ON c.item_id = f.item_id ORDER BY c.claim_id DESC");
 if ($claims_query) {
     while ($row = $claims_query->fetch_assoc()) {
         $db_claims[] = [
             'id' => (int)$row['claim_id'],
             'item' => $row['item_name'],
-            'by' => $row['contact'],
+            'by' => !empty($row['claimant']) ? $row['claimant'] : $row['contact'],
             'submitted' => 'Claim ' . $row['claim_id'],
             'color' => $row['colour'],
             'contents' => $row['distinguishing_marks'],

@@ -58,23 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error_msg = "Failed to upload image. Please check directory permissions.";
                     $file_valid = false;
                 }
-        $file = $_FILES['photo'];
-        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
-        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed_exts = ['jpg', 'jpeg', 'png'];
-        
-        // Validate image type and size (max 5MB)
-        if (!in_array($file['type'], $allowed_types) && !in_array($file_ext, $allowed_exts)) {
-            $error_msg = "Only JPG, JPEG, and PNG images are allowed.";
-        } elseif ($file['size'] > 5 * 1024 * 1024) {
-            $error_msg = "The image size must be under 5MB.";
-        } else {
-            // Generate a unique filename to prevent overwrite
-            $filename = uniqid('lost_', true) . '.' . $file_ext;
-            $upload_path = 'uploads/' . $filename;
-            $upload_dir = __DIR__ . '/uploads';
-            if (!is_dir($upload_dir)) {
-                @mkdir($upload_dir, 0777, true);
             }
         }
 
@@ -90,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $stmt->close();
             } else {
-                $error_msg = "Database statement preparation failed.";
+                $error_msg = "Database statement preparation failed: " . $conn->error;
             }
         }
     }
@@ -248,7 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label for="contact" class="form-label">Contact Email / Phone Number</label>
                             <div class="input-icon-group">
                                 <i class="fa-solid fa-phone"></i>
-                                <input type="text" id="contact" name="contact" class="form-control" placeholder="e.g. cs21b045@zeal.edu.in or 9876543210" value="<?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?>" required>
+                                <input type="text" id="contact" name="contact" class="form-control" placeholder="e.g. cs21b045@zeal.edu.in or 9876543210" value="<?php echo htmlspecialchars($_SESSION['email'] ?? $_SESSION['username'] ?? ''); ?>" required>
                             </div>
                         </div>
 
