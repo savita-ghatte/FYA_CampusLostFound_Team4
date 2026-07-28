@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (password_verify($password, $row['password']) || $password === $row['password']) {
                     $_SESSION['username'] = $row['username'];
                     $_SESSION['name'] = $row['name'];
+                    $_SESSION['role'] = ($row['username'] === 'admin') ? 'admin' : 'user';
 
                     if ($row['username'] === 'admin') {
                         header("Location: admin.php");
