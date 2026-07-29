@@ -3,10 +3,6 @@
 session_start();
 include "db.php";
 
-if (isset($_SESSION['username']) && !isset($_SESSION['role'])) {
-    $_SESSION['role'] = ($_SESSION['username'] === 'admin') ? 'admin' : 'user';
-}
-
 // Redirect to login if not authenticated
 if (!isset($_SESSION['username'])) {
     header("Location: login.php");
@@ -114,18 +110,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="report_found.php" class="nav-link active">
                 <i class="fa-solid fa-hand-holding-hand"></i> Report Found
             </a>
-            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                <a href="items.php" class="nav-link">
-                    <i class="fa-solid fa-boxes-stacked"></i> Browse Items
-                </a>
-                <a href="claims.php" class="nav-link">
-                    <i class="fa-solid fa-clipboard-check"></i> Claims
-                </a>
-            <?php endif; ?>
+            <a href="items.php" class="nav-link">
+                <i class="fa-solid fa-boxes-stacked"></i> Browse Items
+            </a>
+            <a href="claims.php" class="nav-link">
+                <i class="fa-solid fa-clipboard-check"></i> Claims
+            </a>
             <a href="profile.php" class="nav-link">
                 <i class="fa-solid fa-user-gear"></i> Profile
             </a>
-            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+            <?php if (isset($_SESSION['username']) && $_SESSION['username'] === 'admin'): ?>
                 <a href="admin.php" class="nav-link">
                     <i class="fa-solid fa-shield-halved"></i> Admin Portal
                 </a>
@@ -229,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label for="contact" class="form-label">Finder Contact Email / Phone</label>
                             <div class="input-icon-group">
                                 <i class="fa-solid fa-phone"></i>
-                                <input type="text" id="contact" name="contact" class="form-control" placeholder="e.g. finder@zeal.edu.in or 9876543210" value="<?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?>" required>
+                                <input type="text" id="contact" name="contact" class="form-control" placeholder="e.g. finder@zeal.edu.in or 9876543210" value="<?php echo htmlspecialchars($_SESSION['email'] ?? $_SESSION['username'] ?? ''); ?>" required>
                             </div>
                         </div>
 

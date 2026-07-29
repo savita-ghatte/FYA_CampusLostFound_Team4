@@ -60,6 +60,7 @@ $table_queries = [
     "claims" => "CREATE TABLE IF NOT EXISTS claims (
         claim_id INT AUTO_INCREMENT PRIMARY KEY,
         item_id INT NOT NULL,
+        claimant VARCHAR(255) DEFAULT NULL,
         colour VARCHAR(100) NOT NULL,
         distinguishing_marks TEXT NOT NULL,
         image VARCHAR(255) DEFAULT NULL,
@@ -83,6 +84,12 @@ if ($check_name_col && $check_name_col->num_rows === 0) {
 $check_email_col = $conn->query("SHOW COLUMNS FROM users LIKE 'email'");
 if ($check_email_col && $check_email_col->num_rows === 0) {
     $conn->query("ALTER TABLE users ADD COLUMN email VARCHAR(255) DEFAULT NULL AFTER name");
+}
+
+// Check if claims table is missing 'claimant' column
+$check_claimant_col = $conn->query("SHOW COLUMNS FROM claims LIKE 'claimant'");
+if ($check_claimant_col && $check_claimant_col->num_rows === 0) {
+    $conn->query("ALTER TABLE claims ADD COLUMN claimant VARCHAR(255) DEFAULT NULL AFTER item_id");
 }
 
 // 5. Seed default users if users table is empty

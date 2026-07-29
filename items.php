@@ -3,20 +3,6 @@
 session_start();
 include "db.php";
 
-if (isset($_SESSION['username']) && !isset($_SESSION['role'])) {
-    $_SESSION['role'] = ($_SESSION['username'] === 'admin') ? 'admin' : 'user';
-}
-
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    exit();
-}
-
-if (empty($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: index.php");
-    exit();
-}
-
 // Fetch all lost items
 $db_items = [];
 
@@ -104,18 +90,16 @@ $json_items = json_encode($db_items);
                 <a href="report_found.php" class="nav-link">
                     <i class="fa-solid fa-hand-holding-hand"></i> Report Found
                 </a>
-                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                    <a href="items.php" class="nav-link active">
-                        <i class="fa-solid fa-boxes-stacked"></i> Browse Items
-                    </a>
-                    <a href="claims.php" class="nav-link">
-                        <i class="fa-solid fa-clipboard-check"></i> Claims
-                    </a>
-                <?php endif; ?>
+                <a href="items.php" class="nav-link active">
+                    <i class="fa-solid fa-boxes-stacked"></i> Browse Items
+                </a>
+                <a href="claims.php" class="nav-link">
+                    <i class="fa-solid fa-clipboard-check"></i> Claims
+                </a>
                 <a href="profile.php" class="nav-link">
                     <i class="fa-solid fa-user-gear"></i> Profile
                 </a>
-                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                <?php if ($_SESSION['username'] === 'admin'): ?>
                     <a href="admin.php" class="nav-link">
                         <i class="fa-solid fa-shield-halved"></i> Admin Portal
                     </a>
