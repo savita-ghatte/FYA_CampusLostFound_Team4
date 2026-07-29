@@ -52,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         // Registration success - auto login and redirect
                         $_SESSION['username'] = $username;
                         $_SESSION['name'] = $name;
-                        $_SESSION['role'] = ($username === 'admin') ? 'admin' : 'user';
                         header("Location: index.php");
                         exit();
                     } else {

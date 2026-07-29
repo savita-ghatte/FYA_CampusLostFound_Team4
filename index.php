@@ -3,10 +3,6 @@
 session_start();
 include "db.php";
 
-if (isset($_SESSION['username']) && !isset($_SESSION['role'])) {
-    $_SESSION['role'] = ($_SESSION['username'] === 'admin') ? 'admin' : 'user';
-}
-
 // Set no-cache headers
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
@@ -91,18 +87,16 @@ if ($recent_res) {
                 <a href="report_found.php" class="nav-link">
                     <i class="fa-solid fa-hand-holding-hand"></i> Report Found
                 </a>
-                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                    <a href="items.php" class="nav-link">
-                        <i class="fa-solid fa-boxes-stacked"></i> Browse Items
-                    </a>
-                    <a href="claims.php" class="nav-link">
-                        <i class="fa-solid fa-clipboard-check"></i> Claims
-                    </a>
-                <?php endif; ?>
+                <a href="items.php" class="nav-link">
+                    <i class="fa-solid fa-boxes-stacked"></i> Browse Items
+                </a>
+                <a href="claims.php" class="nav-link">
+                    <i class="fa-solid fa-clipboard-check"></i> Claims
+                </a>
                 <a href="profile.php" class="nav-link">
                     <i class="fa-solid fa-user-gear"></i> Profile
                 </a>
-                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                <?php if ($_SESSION['username'] === 'admin'): ?>
                     <a href="admin.php" class="nav-link">
                         <i class="fa-solid fa-shield-halved"></i> Admin Portal
                     </a>
@@ -365,16 +359,14 @@ if ($recent_res) {
                                         </div>
                                     </div>
 
-                                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                                        <?php if ($item['type'] === 'found'): ?>
-                                            <a href="claims.php?item_id=<?php echo $item['item_id']; ?>" class="btn btn-success btn-block">
-                                                <i class="fa-solid fa-handshake"></i> Claim Ownership
-                                            </a>
-                                        <?php else: ?>
-                                            <a href="items.php" class="btn btn-outline btn-block">
-                                                <i class="fa-solid fa-eye"></i> View Details
-                                            </a>
-                                        <?php endif; ?>
+                                    <?php if ($item['type'] === 'found'): ?>
+                                        <a href="claims.php?item_id=<?php echo $item['item_id']; ?>" class="btn btn-success btn-block">
+                                            <i class="fa-solid fa-handshake"></i> Claim Ownership
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="items.php" class="btn btn-outline btn-block">
+                                            <i class="fa-solid fa-eye"></i> View Details
+                                        </a>
                                     <?php endif; ?>
                                 </div>
                             </div>
